@@ -43,6 +43,7 @@ function getGameState() {
       image: currentQuestion.image || ""
     } : null,
     buzzerUnlockAt: buzzerUnlockAt,
+    special: activeSpecial,
     rules: rules,
     updatedAt: new Date().toISOString()
   };
@@ -65,6 +66,7 @@ function applyGameState(state) {
   buzzerUnlockAt = Number(state.buzzerUnlockAt) || 0;
   currentGameCode = state.gameCode || currentGameCode;
   setRulesFromGame(state.rules);
+  activeSpecial = state.special || "";
   updateGameCodeDisplay();
   updateHostBuzzerGateStatus();
 
@@ -80,6 +82,7 @@ function applyGameState(state) {
 
   renderScoreBoard();
   renderBoard();
+  renderSpecial();
 }
 
 async function saveGame(showConfirmation = true) {
@@ -203,6 +206,8 @@ function applyGameStateLive(state) {
   buzzerUnlockAt = Number(state.buzzerUnlockAt) || 0;
   currentGameCode = state.gameCode || currentGameCode;
   setRulesFromGame(state.rules);
+  activeSpecial = state.special || "";
+  renderSpecial();
   updateGameCodeDisplay();
   updateHostBuzzerGateStatus();
   syncLiveQuestion(state.activeQuestion || null);

@@ -2,6 +2,7 @@
   Den røde knappen: spillerside, vertens trykkeliste og låsing.
   Knappen er låst de første 60 sekundene av et spørsmål. Hvert trykk låser den
   for alle i nye 20 sekunder (BUZZ_LOCK_MS), helt til verten lukker spørsmålet.
+  Under spesialrunden «Førstemann» er knappen åpen med en gang, og hvert lag kan trykke én gang.
 */
 
 function getQuestionBuzzes() {
@@ -15,10 +16,13 @@ function getQuestionBuzzes() {
 //   thinking  – de første 60 sekundene
 //   answering – noen har trykket, knappen er låst i 20 sekunder
 //   open      – knappen kan trykkes
+//   race      – «Førstemann»: åpen for alle lag som ikke har trykket ennå
 function getBuzzerGate() {
   if (!activeQuestionId || !buzzerUnlockAt) return { state: "waiting", presses: [] };
 
   const presses = getQuestionBuzzes();
+  if (activeSpecial === "forstemann") return { state: "race", presses };
+
   const lastPress = presses[presses.length - 1] || null;
   const openAt = Math.max(buzzerUnlockAt, lastPress ? lastPress.pressedAt + BUZZ_LOCK_MS : 0);
   const secondsLeft = Math.ceil((openAt - serverNow()) / 1000);
@@ -72,7 +76,11 @@ async function pressBuzzer() {
   const button = document.getElementById("bigRedButton");
   const status = document.getElementById("buzzerStatus");
 
-  if (isSendingBuzz || getBuzzerGate().state !== "open") {
+  const gate = getBuzzerGate();
+  const canPress = gate.state === "open" ||
+    (gate.state === "race" && !gate.presses.some(press => press.team === selectedBuzzerTeam));
+
+  if (isSendingBuzz || !canPress) {
     updateBuzzerAvailability();
     return;
   }
@@ -93,7 +101,7 @@ async function pressBuzzer() {
     isSendingBuzz = false;
     if (error.status === 409) {
       updateBuzzerAvailability();
-      status.textContent = "For sent – et annet lag rakk å trykke først.";
+      if (gate.state !== "race") status.textContent = "For sent – et annet lag rakk å trykke først.";
       return;
     }
     console.error(error);
@@ -133,6 +141,7 @@ function startBuzzListening(mode) {
         if (isHost) renderHostBuzzes(sortedBuzzes);
         renderQuestionBuzzResult();
         updateHostBuzzerGateStatus();
+        renderRaceResults();
       } else {
         updateBuzzerAvailability();
       }
@@ -150,6 +159,8 @@ function startBuzzerGateListening() {
     unsubscribeBuzzerGame = backendListenToGameState(currentGameCode, state => {
       buzzerUnlockAt = Number(state?.buzzerUnlockAt) || 0;
       activeQuestionId = state?.activeQuestionId || "";
+      activeSpecial = state?.special || "";
+      renderSpecial();
       updateBuzzerAvailability();
     });
 
@@ -186,6 +197,16 @@ function updateBuzzerAvailability() {
     return;
   }
 
+  if (gate.state === "race") {
+    const place = gate.presses.findIndex(press => press.team === selectedBuzzerTeam) + 1;
+    button.disabled = place > 0;
+    button.textContent = place > 0 ? `#${place}` : "TRYKK!";
+    status.textContent = place > 0
+      ? `Førstemann! Laget ditt ble nummer ${place}.`
+      : "Førstemann! Trykk så fort du kan!";
+    return;
+  }
+
   if (gate.state === "thinking") {
     button.disabled = true;
     button.textContent = gate.secondsLeft;
@@ -219,6 +240,9 @@ function updateHostBuzzerGateStatus() {
   if (gate.state === "waiting") {
     status.classList.add("waiting");
     status.textContent = "Venter på at et spørsmål åpnes.";
+  } else if (gate.state === "race") {
+    status.classList.add("open");
+    status.textContent = `Førstemann! ${gate.presses.length} av ${teams.length} lag har trykket`;
   } else if (gate.state === "thinking") {
     status.classList.add("locked");
     status.textContent = `Rød knapp låst – åpner om ${gate.secondsLeft} sek`;
@@ -245,7 +269,7 @@ function renderQuestionBuzzResult() {
   const gate = getBuzzerGate();
   panel.classList.remove("open", "winner");
 
-  if (gate.state === "waiting") {
+  if (gate.state === "waiting" || gate.state === "race") {
     panel.textContent = "Resultatet vises her når den røde knappen åpner.";
     return;
   }

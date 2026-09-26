@@ -497,3 +497,107 @@
   .rules-editor-row .editor-icon-button { width: 100%; }
   .rules-actions-spacer { display: none; }
 }
+
+/* Spesialrunder (🎉 Spesial) */
+.special-menu-backdrop { z-index: 1600; }
+.special-backdrop { z-index: 1500; }
+
+.special-menu {
+  max-width: 460px;
+}
+
+.special-choices {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.special-choice {
+  padding: 18px;
+  border: 2px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.special-choice:hover {
+  border-color: #ffd700;
+  background: rgba(255,215,0,0.14);
+}
+
+.special-card {
+  padding-top: 40px;
+  padding-bottom: 34px;
+}
+
+.special-icon {
+  font-size: clamp(4rem, 14vw, 8rem);
+  line-height: 1;
+  animation: specialPop .5s cubic-bezier(.2, 1.6, .4, 1);
+}
+
+.special-card .special-title {
+  margin: 18px 0 26px;
+  font-size: clamp(2.2rem, 7vw, 4.2rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+  animation: specialPop .5s cubic-bezier(.2, 1.6, .4, 1);
+}
+
+.special-backdrop[data-special="skal"] .special-icon,
+.special-backdrop[data-special="skal"] .special-title {
+  animation: specialPop .5s cubic-bezier(.2, 1.6, .4, 1), specialCheers 1.2s ease-in-out .5s infinite;
+}
+
+.special-race {
+  margin: -8px 0 22px;
+}
+
+.special-race-status {
+  margin: 0 0 12px;
+  font-weight: bold;
+}
+
+.special-race-list {
+  display: grid;
+  gap: 8px;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.special-race-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.28);
+  font-size: 1.2rem;
+  animation: specialPop .3s ease-out;
+}
+
+.special-race-list li.first {
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #111827;
+  font-size: 1.45rem;
+}
+
+@keyframes specialPop {
+  from { opacity: 0; transform: scale(.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes specialCheers {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-6deg) scale(1.06); }
+  75% { transform: rotate(6deg) scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .special-icon,
+  .special-card .special-title,
+  .special-race-list li { animation: none !important; }
+}

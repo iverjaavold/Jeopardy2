@@ -177,10 +177,18 @@ async function handleApi(req, res, kind, code, isEvents) {
       }
 
       const pressedAt = Date.now();
-      if (pressedAt < (buzzLockedUntil.get(code) || 0)) {
-        return sendJson(res, 409, { error: "Et annet lag rakk å trykke først." });
+      const isRace = games.get(code)?.special === "forstemann";
+
+      if (isRace) {
+        // «Førstemann»: ingen lås, men hvert lag kan bare trykke én gang.
+        const alreadyPressed = Object.values(buzzers.get(code) || {}).some(existing => existing.team === buzz.team);
+        if (alreadyPressed) return sendJson(res, 409, { error: "Laget ditt har allerede trykket." });
+      } else {
+        if (pressedAt < (buzzLockedUntil.get(code) || 0)) {
+          return sendJson(res, 409, { error: "Et annet lag rakk å trykke først." });
+        }
+        buzzLockedUntil.set(code, pressedAt + BUZZ_LOCK_MS);
       }
-      buzzLockedUntil.set(code, pressedAt + BUZZ_LOCK_MS);
 
       buzzSequence += 1;
       const buzzId = `${pressedAt}-${String(buzzSequence).padStart(6, "0")}`;

@@ -24,6 +24,7 @@ let buzzerUnlockAt = 0;
 let activeQuestionId = "";
 let latestBuzzes = [];
 let isSendingBuzz = false;
+let activeSpecial = ""; // spesialrunde som vises på alle skjermer (se special.js)
 
 const BUZZ_LOCK_MS = 20000; // knappen er låst for alle så lenge etter hvert trykk
 

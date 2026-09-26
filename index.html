@@ -149,6 +149,7 @@
         <button class="btn-secondary" onclick="goBackToSetup()">Endre lag</button>
         <button class="btn-secondary" onclick="openQuestionEditor()">✏️ Endre spørsmål</button>
         <button class="btn-primary" onclick="openExtraPoints()">⭐ Ekstra poeng</button>
+        <button class="btn-red" onclick="openSpecialMenu()">🎉 Spesial</button>
         <button class="btn-secondary" onclick="showRules()">Regler</button>
         <div id="gameCodeBox" class="game-code-box hidden">
           <p id="gameCodeLabel">Spillkode:</p>
@@ -297,6 +298,32 @@
     </div>
   </div>
 
+  <div id="specialMenuBackdrop" class="modal-backdrop special-menu-backdrop" role="dialog" aria-modal="true"
+       aria-labelledby="specialMenuTitle" onclick="if (event.target === this) closeSpecialMenu()">
+    <div class="modal special-menu">
+      <h2 id="specialMenuTitle">🎉 Spesialrunde</h2>
+      <p>Vises stort på skjermene til alle som er med.</p>
+      <div class="special-choices">
+        <button class="special-choice" onclick="startSpecial('stemming')">🗳️ Ekstraordinær stemming</button>
+        <button class="special-choice" onclick="startSpecial('forstemann')">🔴 Førstemann</button>
+        <button class="special-choice" onclick="startSpecial('skal')">🍻 Skål</button>
+      </div>
+      <button class="btn-secondary" onclick="closeSpecialMenu()">Avbryt</button>
+    </div>
+  </div>
+
+  <div id="specialBackdrop" class="modal-backdrop special-backdrop" role="dialog" aria-modal="true" aria-labelledby="specialTitle">
+    <div class="modal special-card">
+      <div id="specialIcon" class="special-icon" aria-hidden="true"></div>
+      <h2 id="specialTitle" class="special-title"></h2>
+      <div id="specialRace" class="special-race hidden">
+        <p id="specialRaceStatus" class="special-race-status"></p>
+        <ol id="specialRaceList" class="special-race-list"></ol>
+      </div>
+      <button id="specialCloseButton" class="btn-secondary" onclick="endSpecial()">Lukk</button>
+    </div>
+  </div>
+
   <div id="modalBackdrop" class="modal-backdrop">
     <div class="modal">
       <h2 id="modalCategory"></h2>
@@ -352,6 +379,7 @@
   <script src="js/buzzer.js"></script>
   <script src="js/game.js"></script>
   <script src="js/extra-points.js"></script>
+  <script src="js/special.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/main.js"></script>
 </body>
