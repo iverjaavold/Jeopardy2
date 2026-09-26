@@ -15,12 +15,16 @@ const DEFAULT_RULES = [
   { title: "Kun ett svar", text: "Når laget har gitt sitt endelige svar, kan det ikke endres etter at spillverten har vurdert det." },
   { title: "Rimelig svartid", text: "Laget som får ordet, må svare innen rimelig tid. Spillverten kan sende turen videre hvis laget bruker for lang tid." },
   { title: "Ingen hjelpemidler", text: "Mobil, nettsøk, KI og andre hjelpemidler er ikke tillatt med mindre spillverten sier noe annet." },
-  { title: "Ikke vær en bitch", text: "Vis respekt, ikke ødelegg for andre lag, ikke rop ut svar og ikke krangle med spillverten." },
+  { title: "Ikke vær en bitch", text: "Vis respekt, ikke ødelegg for andre lag, ikke rop ut svar og ikke krangle med spillverten og generelt: Ikke vær en bitch." },
   { title: "Spillverten bestemmer", text: "Spillvertens vurdering av svar, trykkerekkefølge og poeng er endelig." },
   { title: "Minuspoeng", text: "Regelbrudd, juks, forstyrrelser eller dårlig oppførsel kan gi minuspoeng. Spillverten bestemmer hvor mange." },
   { title: "Poeng", text: "Riktig svar gir spørsmålets poengverdi. Feil svar kan gi null eller minuspoeng etter spillvertens vurdering." },
   { title: "Ha det gøy", text: "Konkurrer hardt, men vær grei med de andre spillerne." },
-  { title: "MØ!-bonus", text: "Hvis du roper «MØ!» av full hals, får du 200 ekstra poeng." }
+  { title: "Ikke si i mot", text: "Dersom du sier imot spillederen, kan du bli trukket poeng, helt opp til 300 minuspoeng." },
+  { title: "MØ!-bonus", text: "Hvis du roper «MØ!» av full hals, får du 200 ekstra poeng." },
+  { title: "Isak-regelen", text: "Dersom Isak gjør det vanskelig for spillmesteren mens reglene forklares, vil laget hans bli holdt ansvarlig. De vil kunne få minuspoeng, måtte stå over neste oppgave og/eller chugge en liter øl, fordelt innad i laget." },
+  { title: "Bravida reglen", text: "Ansatte i Bravida-konsernet må drikke tre slurker dersom flertallet stemmer ja under en ekstraordinær avstemning" },
+  { title: "Dysleksi-regelen", text: "Dersom en spiller påpeker skrivefeil i spillet, skal spilleren irettesettes av laget sitt og drikke tre slurker." }
 ];
 
 let rules = [];
