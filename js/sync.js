@@ -62,9 +62,7 @@ async function saveGame(showConfirmation = true) {
   try {
     await backendSaveGameState(currentGameCode, getGameState());
     if (showConfirmation) {
-      alert(isBetaMode
-        ? `Beta-spillet med kode ${currentGameCode} er lagret lokalt!`
-        : `Spillet med kode ${currentGameCode} er lagret!`);
+      alert(`Spillet med kode ${currentGameCode} er lagret!`);
     }
   } catch (error) {
     console.error(error);

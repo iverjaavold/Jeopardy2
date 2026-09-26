@@ -52,9 +52,7 @@ async function startGame() {
   renderBoard();
   await saveGame(false);
   startBuzzListening(true);
-  alert(isBetaMode
-    ? `Lokalt beta-spill er opprettet! Koden er ${currentGameCode}. Åpne filen i en ny fane, trykk B-test og bruk koden for å teste spillerfunksjonene.`
-    : `Spillet er opprettet! Spillkoden er ${currentGameCode}.`);
+  alert(`Spillet er opprettet! Spillkoden er ${currentGameCode}.`);
 }
 
 async function generateUniqueGameCode() {

@@ -24,10 +24,7 @@ let buzzerUnlockAt = 0;
 let activeQuestionId = "";
 let latestHostBuzzes = [];
 let hasCurrentClientBuzz = false;
-let isBetaMode = sessionStorage.getItem("jeopardyBetaMode") === "true";
 
-const LOCAL_GAME_PREFIX = "jeopardy-beta-game-";
-const LOCAL_BUZZ_PREFIX = "jeopardy-beta-buzzes-";
 const buzzerClientId = sessionStorage.getItem("jeopardyBuzzerClientId") ||
   (window.crypto?.randomUUID?.() || `client-${Date.now()}-${Math.random()}`);
 sessionStorage.setItem("jeopardyBuzzerClientId", buzzerClientId);

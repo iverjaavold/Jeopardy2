@@ -20,7 +20,7 @@ jeopardy-app/
 └── js/
     ├── questions.js      Standardspørsmålene – rediger dem her
     ├── state.js          Felles variabler (lag, poeng, spillkode osv.)
-    ├── backend.js        Velger mellom serveren og lokal B-test (localStorage)
+    ├── backend.js        Snakker med serveren (lagring og live-oppdateringer)
     ├── editor.js         «Endre spørsmål»-vinduet
     ├── navigation.js     Forside, bli med, valg, regler, vert/seer-modus
     ├── buzzer.js         Den røde knappen og trykkelisten
@@ -39,8 +39,6 @@ node server.js
 ```
 
 Åpne `http://localhost:3000`.
-
-Uten server kan du åpne `index.html` direkte og trykke **B-test**. Da lagres alt bare i nettleseren.
 
 Skriptene i `index.html` må lastes i den rekkefølgen de står i, fordi de deler variabler og funksjoner.
 
