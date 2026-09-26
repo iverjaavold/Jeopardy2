@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101537" />
+  <title>Kontor-Jeopardy</title>
+
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+
+<body>
+
+  <button id="betaTestButton" class="beta-test-button" onclick="enableBetaTestMode()" title="Kjør spillet lokalt uten server">
+    B-test
+  </button>
+  <div id="betaModeNotice" class="beta-mode-notice hidden" aria-live="polite">
+    B-test er aktiv: Spillet lagres bare lokalt i denne nettleseren.
+  </div>
+  <section id="landingScreen" class="landing-screen">
+    <div class="landing-card">
+      <h1>Jeopardy</h1>
+      <p class="landing-subtitle">by Iver A. N. J</p>
+
+      <div class="landing-actions">
+        <button class="btn-primary landing-button" onclick="createGameFromLanding()">Lag spill</button>
+        <button class="btn-secondary landing-button" onclick="joinGameFromLanding()">Bli med på spill</button>
+      </div>
+    </div>
+  </section>
+
+  <header id="appHeader" class="hidden">
+    <h1>JEOPARDY</h1>
+    <p>Grimstad</p>
+  </header>
+
+  <main id="appMain" class="hidden">
+    <section id="joinPanel" class="panel join-status hidden">
+      <h2>Bli med på spill</h2>
+      <p>Skriv inn den firesifrede koden du fikk av spillverten.</p>
+
+      <div class="join-form">
+        <input
+          id="joinCodeInput"
+          class="join-code-input"
+          type="text"
+          inputmode="numeric"
+          maxlength="4"
+          pattern="[0-9]{4}"
+          placeholder="0000"
+          aria-label="Firesifret spillkode"
+          oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4)"
+          onkeydown="if (event.key === 'Enter') joinGameWithCode()"
+        />
+        <button class="btn-primary" style="width: 100%;" onclick="joinGameWithCode()">
+          Bli med
+        </button>
+      </div>
+
+      <p id="joinError" class="join-error" aria-live="polite"></p>
+      <button class="btn-secondary" onclick="backToLanding()">Tilbake til forsiden</button>
+    </section>
+
+    <section id="joinChoicePanel" class="panel join-status hidden">
+      <h2>Velg hvordan du vil bli med</h2>
+      <p>Du er koblet til spill <span id="selectedGameCode" class="selected-game-code">----</span>.</p>
+      <div class="join-choice-actions">
+        <button class="btn-red join-choice-button" onclick="openRedButtonSetup()">Den røde knappen</button>
+        <button class="btn-primary join-choice-button" onclick="openGameOverview()">Spilloversikt</button>
+      </div>
+      <button class="btn-secondary" onclick="showJoinCodePanel()">Tilbake</button>
+    </section>
+
+    <section id="buzzerSetupPanel" class="panel join-status hidden">
+      <h2>Den røde knappen</h2>
+      <p>Velg hvilket lag du er med på.</p>
+      <div class="join-form">
+        <select id="buzzerTeamSelect" aria-label="Velg laget ditt">
+          <option value="">Velg lag...</option>
+        </select>
+        <button class="btn-red" style="width: 100%;" onclick="showBigRedButton()">Fortsett</button>
+      </div>
+      <p id="buzzerSetupError" class="join-error" aria-live="polite"></p>
+      <button class="btn-secondary" onclick="showJoinChoices()">Tilbake</button>
+    </section>
+
+    <section id="buzzerPanel" class="panel join-status hidden">
+      <h2 id="buzzerTeamHeading">Klar?</h2>
+      <p>Knappen låses opp når spørsmålets 60 sekunder har gått.</p>
+      <button id="bigRedButton" class="big-red-button" onclick="pressBuzzer()">TRYKK!</button>
+      <p id="buzzerStatus" class="buzzer-status" aria-live="polite">Venter på at spillverten åpner et spørsmål.</p>
+      <button class="btn-secondary" onclick="leaveBuzzer()">Tilbake</button>
+    </section>
+
+    <section id="setupPanel" class="panel">
+      <h2>Legg inn lag</h2>
+      <p>Skriv inn navn på lagene som skal spille.</p>
+
+      <div id="teamInputs" class="setup-teams">
+        <input type="text" placeholder="Lag 1" />
+        <input type="text" placeholder="Lag 2" />
+      </div>
+
+      <button class="btn-secondary" onclick="addTeamInput()">Legg til lag</button>
+      <button class="btn-secondary" onclick="openQuestionEditor()">✏️ Endre spørsmål</button>
+      <button class="btn-primary" onclick="startGame()">Start spillet</button>
+      <button class="btn-secondary" onclick="backToLanding()">Tilbake til forsiden</button>
+    </section>
+
+    <section id="gamePanel" class="hidden">
+      <div class="top-actions host-only">
+        <button id="saveGameButton" class="btn-secondary" onclick="saveGame()">Lagre spill</button>
+        <button id="loadGameButton" class="btn-secondary" onclick="loadGame()">Last spill</button>
+        <button class="btn-secondary" onclick="resetGame()">Nullstill spill</button>
+        <button class="btn-secondary" onclick="goBackToSetup()">Endre lag</button>
+        <button class="btn-secondary" onclick="openQuestionEditor()">✏️ Endre spørsmål</button>
+        <button class="btn-primary" onclick="openExtraPoints()">⭐ Ekstra poeng</button>
+        <button class="btn-secondary" onclick="showRules()">Regler</button>
+        <div id="gameCodeBox" class="game-code-box hidden">
+          <p id="gameCodeLabel">Spillkode:</p>
+          <div id="gameCodeDisplay" class="game-code">----</div>
+        </div>
+      </div>
+
+      <div id="viewerActions" class="top-actions hidden">
+        <button class="btn-secondary" onclick="showJoinChoices()">Tilbake til valgene</button>
+        <button class="btn-secondary" onclick="showRules()">Regler</button>
+      </div>
+
+      <div class="teams">
+        <div id="scoreBoard" class="score-board-items"></div>
+        <section id="hostBuzzerPanel" class="buzzer-host-panel host-only">
+          <div class="buzzer-panel-header">
+            <h2>🔴 Hvem trykket først?</h2>
+            <button class="btn-red buzzer-reset-button" onclick="resetBuzzers()">Nullstill</button>
+          </div>
+          <div id="hostBuzzerGateStatus" class="host-buzzer-gate-status waiting" aria-live="polite">
+            Venter på at et spørsmål åpnes.
+          </div>
+          <p id="noBuzzesMessage">Ingen har trykket ennå.</p>
+          <ol id="hostBuzzList" class="buzz-list"></ol>
+        </section>
+      </div>
+
+      <div id="jeopardyBoard" class="board"></div>
+    </section>
+  </main>
+
+
+  <div id="questionEditorBackdrop" class="question-editor-backdrop" role="dialog" aria-modal="true" aria-labelledby="questionEditorTitle">
+    <div class="question-editor-modal">
+      <div class="question-editor-header">
+        <div>
+          <h2 id="questionEditorTitle">✏️ Endre spørsmål og kategorier</h2>
+          <p>Tilpass hele spillebrettet før dere starter.</p>
+        </div>
+        <button class="editor-close-button" onclick="closeQuestionEditor()" aria-label="Lukk redigering">✕</button>
+      </div>
+
+      <div class="question-editor-content">
+        <div class="editor-help">
+          Endre kategorinavn, poeng, spørsmål og fasit. Du kan også legge til eller fjerne kategorier og spørsmål.
+        </div>
+        <p id="questionEditorStatus" class="editor-status" aria-live="polite"></p>
+        <div id="questionEditorCategories"></div>
+      </div>
+
+      <div class="question-editor-footer">
+        <div class="editor-footer-group">
+          <button class="btn-primary" onclick="addEditorCategory()">＋ Legg til kategori</button>
+          <button class="btn-secondary" onclick="resetEditorQuestions()">Tilbakestill standard</button>
+        </div>
+        <div class="editor-footer-group">
+          <button class="btn-secondary" onclick="closeQuestionEditor()">Avbryt</button>
+          <button class="btn-green" onclick="saveQuestionChanges()">Lagre endringer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="extraPointsBackdrop"
+       class="extra-points-backdrop"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="extraPointsTitle"
+       onclick="closeExtraPointsFromBackdrop(event)">
+    <div class="extra-points-modal">
+      <button class="extra-points-close" onclick="closeExtraPoints()" aria-label="Lukk">✕</button>
+      <h2 id="extraPointsTitle">⭐ Ekstra poeng</h2>
+      <p>Velg lag, om poengene skal legges til eller trekkes fra, og ønsket beløp.</p>
+
+      <label class="extra-points-field" for="extraPointsTeam">
+        Lag
+        <select id="extraPointsTeam" onchange="updateExtraPointsPreview()">
+          <option value="">Velg lag...</option>
+        </select>
+      </label>
+
+      <label class="extra-points-field" for="extraPointsOperation">
+        Handling
+        <select id="extraPointsOperation" onchange="updateExtraPointsPreview()">
+          <option value="add">Gi ekstra poeng</option>
+          <option value="subtract">Gi ekstra minuspoeng</option>
+        </select>
+      </label>
+
+      <label class="extra-points-field" for="extraPointsAmount">
+        Antall poeng
+        <input id="extraPointsAmount"
+               type="number"
+               min="1"
+               step="1"
+               inputmode="numeric"
+               placeholder="For eksempel 200"
+               oninput="updateExtraPointsPreview()"
+               onkeydown="if (event.key === 'Enter') applyExtraPoints()" />
+      </label>
+
+      <div id="extraPointsPreview" class="extra-points-preview" aria-live="polite">
+        Velg lag og skriv inn poeng.
+      </div>
+
+      <div class="extra-points-actions">
+        <button class="btn-secondary" onclick="closeExtraPoints()">Avbryt</button>
+        <button id="applyExtraPointsButton" class="btn-green" onclick="applyExtraPoints()">
+          Bekreft
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rulesBackdrop" class="rules-backdrop">
+    <div class="rules-modal">
+      <button class="close-btn" onclick="closeRules()">✕</button>
+      <h2>📋 Spilleregler</h2>
+      <ul>
+        <li><strong>Mål:</strong> Få så mange poeng som mulig ved å svare riktig på spørsmål.</li>
+        <li><strong>60 sekunders tenketid:</strong> Alle lag kan diskutere spørsmålet i 60 sekunder. Den røde knappen er låst fram til tiden er ute.</li>
+        <li><strong>Førstemann til knappen:</strong> Etter 60 sekunder får laget som trykker først på den røde knappen, svare først.</li>
+        <li><strong>Neste lag får sjansen:</strong> Hvis det første laget svarer feil, går svarmuligheten videre til neste lag i registrert trykkerekkefølge.</li>
+        <li><strong>Én svarkarantene:</strong> Et lag som svarer feil, får én svarkarantene og kan ikke svare på neste svarmulighet i samme spørsmål.</li>
+        <li><strong>Kun ett svar:</strong> Når laget har gitt sitt endelige svar, kan det ikke endres etter at spillverten har vurdert det.</li>
+        <li><strong>Rimelig svartid:</strong> Laget som får ordet, må svare innen rimelig tid. Spillverten kan sende turen videre hvis laget bruker for lang tid.</li>
+        <li><strong>Ingen hjelpemidler:</strong> Mobil, nettsøk, KI og andre hjelpemidler er ikke tillatt med mindre spillverten sier noe annet.</li>
+        <li><strong>Ikke vær en bitch:</strong> Vis respekt, ikke ødelegg for andre lag, ikke rop ut svar og ikke krangle med spillverten.</li>
+        <li><strong>Spillverten bestemmer:</strong> Spillvertens vurdering av svar, trykkerekkefølge og poeng er endelig.</li>
+        <li><strong>Minuspoeng:</strong> Regelbrudd, juks, forstyrrelser eller dårlig oppførsel kan gi minuspoeng. Spillverten bestemmer hvor mange.</li>
+        <li><strong>Poeng:</strong> Riktig svar gir spørsmålets poengverdi. Feil svar kan gi null eller minuspoeng etter spillvertens vurdering.</li>
+        <li><strong>Ha det gøy:</strong> Konkurrer hardt, men vær grei med de andre spillerne.</li>
+        <li><strong>MØ!-bonus:</strong> Hvis du roper «MØ!» av full hals, får du 200 ekstra poeng.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h2 id="modalCategory"></h2>
+      <div id="modalQuestion" class="question-text"></div>
+
+      <div id="questionTimer" class="question-timer" aria-live="polite">Tid igjen: 60 sek</div>
+
+      <div id="questionBuzzResult" class="question-buzz-result" aria-live="polite">
+        Resultatet vises her når den røde knappen åpner.
+      </div>
+
+      <div class="viewer-only hidden" style="margin: 12px 0; font-weight: bold; color: #ffffff;">
+        Spørsmålet styres av spillverten.
+      </div>
+
+      <button class="btn-primary host-only" onclick="showAnswer()">Vis svar</button>
+
+      <div id="modalAnswer" class="answer-box host-only"></div>
+
+      <div id="answerButtons" class="modal-actions host-only">
+        <button class="btn-green" onclick="markCorrect()">Riktig svar</button>
+        <button class="btn-red" onclick="markWrong()">Feil svar</button>
+        <button class="btn-secondary" onclick="closeQuestion()">Lukk uten poeng</button>
+      </div>
+
+      <div id="scoreActionPanel" class="score-action-panel host-only">
+        <h3 id="scoreActionTitle">Velg lag</h3>
+
+        <label for="answeringTeam" id="answeringTeamLabel">Hvilket lag?</label>
+        <select id="answeringTeam">
+          <option value="">Velg lag...</option>
+        </select>
+
+        <div class="modal-actions">
+          <button id="confirmScoreButton" class="btn-primary" onclick="confirmScoreAction()">
+            Bekreft
+          </button>
+          <button class="btn-secondary" onclick="cancelScoreAction()">Avbryt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rekkefølgen er viktig: data og tilstand først, deretter funksjonene som bruker dem. -->
+  <script src="js/questions.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/backend.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/buzzer.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/extra-points.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

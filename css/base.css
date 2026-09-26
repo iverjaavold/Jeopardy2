@@ -1,0 +1,690 @@
+/* =========================================================
+   GRUNNSTIL
+   Oppsett, layout og grunnleggende komponenter.
+   ========================================================= */
+
+:root {
+  --blue: #060ce9;
+  --dark-blue: #02067a;
+  --yellow: #ffd700;
+  --white: #ffffff;
+  --bg: #ff69b4;
+  --card: #1f2937;
+  --green: #16a34a;
+  --red: #dc2626;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('../assets/havnevag.jpg') center/cover no-repeat;
+  background-attachment: fixed;
+  color: var(--white);
+}
+
+header {
+  text-align: center;
+  padding: 24px 16px;
+  background: #ff69b4;
+}
+
+header h1 {
+  margin: 0;
+  color: #4169e1;
+  font-size: 3.5rem;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+
+header p {
+  margin: 8px 0 0 0;
+  color: #000;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.panel {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+input, button, select {
+  font: inherit;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background: var(--yellow);
+  color: #000;
+}
+
+.btn-secondary {
+  background: #374151;
+  color: white;
+}
+
+.btn-green {
+  background: var(--green);
+  color: white;
+}
+
+.btn-red {
+  background: var(--red);
+  color: white;
+}
+
+.btn-small {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+
+.teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.team-card {
+  background: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.team-card h3 {
+  margin: 0 0 8px;
+  color: #000;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.board {
+  display: grid;
+  gap: 8px;
+}
+
+.category-row,
+.question-row {
+  display: grid;
+  gap: 8px;
+}
+
+.category,
+.question-cell {
+  background: var(--blue);
+  border: 2px solid #111;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.category {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  font-size: 1rem;
+}
+
+.question-cell {
+  color: var(--yellow);
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.question-cell:hover {
+  background: var(--dark-blue);
+  transform: scale(1.02);
+}
+
+.question-cell.used {
+  background: transparent;
+  color: transparent;
+  cursor: not-allowed;
+  transform: none;
+  border: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--blue);
+  border: 4px solid var(--yellow);
+  border-radius: 14px;
+  padding: 30px;
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal h2 {
+  margin-top: 0;
+  color: var(--yellow);
+}
+
+.question-text {
+  font-size: 2rem;
+  margin: 30px 0;
+  line-height: 1.3;
+}
+
+.question-timer {
+  display: inline-block;
+  min-width: 220px;
+  margin: 0 0 10px;
+  padding: 12px 18px;
+  border: 3px solid var(--yellow);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  color: var(--yellow);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.question-timer.time-up {
+  background: var(--red);
+  border-color: white;
+  color: white;
+  animation: timerPulse 0.8s infinite alternate;
+}
+
+@keyframes timerPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.answer-box {
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+  font-size: 1.3rem;
+  display: none;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.score-action-panel {
+  display: none;
+  margin-top: 18px;
+  padding: 18px;
+  border: 2px solid var(--yellow);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+}
+
+.score-action-panel h3 {
+  margin: 0 0 12px;
+  color: var(--yellow);
+}
+
+.score-action-panel select {
+  margin-bottom: 12px;
+}
+
+.setup-teams {
+  display: grid;
+  gap: 10px;
+  max-width: 500px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.close-btn:hover {
+  background: #c00000;
+}
+
+.rules-modal {
+  background: var(--blue);
+  border: 4px solid var(--yellow);
+  border-radius: 14px;
+  padding: 30px;
+  max-width: 800px;
+  width: 100%;
+  text-align: left;
+  position: relative;
+}
+
+.rules-modal h2 {
+  margin-top: 0;
+  color: var(--yellow);
+  text-align: center;
+}
+
+.rules-modal ul {
+  color: white;
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.rules-modal li {
+  margin-bottom: 12px;
+}
+
+.rules-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+}
+
+.rules-backdrop.show {
+  display: flex;
+}
+
+
+/* Forside */
+.landing-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    linear-gradient(rgba(2, 6, 122, 0.72), rgba(255, 105, 180, 0.72)),
+    url('../assets/havnevag.jpg') center/cover no-repeat;
+  text-align: center;
+}
+
+.landing-card {
+  width: min(680px, 100%);
+  padding: 56px 30px;
+  border: 4px solid var(--yellow);
+  border-radius: 24px;
+  background: rgba(6, 12, 233, 0.92);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.landing-card h1 {
+  margin: 0;
+  color: var(--yellow);
+  font-size: clamp(3.5rem, 12vw, 7rem);
+  line-height: 1;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+.landing-subtitle {
+  margin: 18px 0 40px;
+  color: white;
+  font-size: clamp(1.1rem, 4vw, 1.6rem);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.landing-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.landing-button {
+  min-height: 62px;
+  padding: 14px 20px;
+  border: 2px solid white;
+  border-radius: 12px;
+  font-size: 1.15rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.landing-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.join-status {
+  text-align: center;
+}
+
+.join-status h2 {
+  color: var(--yellow);
+}
+
+.game-code-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 2px solid var(--yellow);
+  border-radius: 8px;
+  background: var(--blue);
+  color: white;
+  text-align: center;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.top-actions .game-code-box {
+  margin-left: auto;
+}
+
+.game-code-box p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.game-code {
+  color: var(--yellow);
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.join-form {
+  max-width: 360px;
+  margin: 18px auto;
+}
+
+.join-code-input {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 10px;
+}
+
+.join-error {
+  min-height: 24px;
+  color: #fecaca;
+  font-weight: bold;
+}
+
+@media (max-width: 520px) {
+  .landing-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-card {
+    padding: 44px 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .question-cell {
+    font-size: 1.3rem;
+    min-height: 60px;
+  }
+
+  .category {
+    font-size: 0.8rem;
+    min-height: 60px;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+  }
+}
+
+/* Valg etter at spillkode er godkjent */
+.join-choice-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 620px;
+  margin: 24px auto;
+}
+
+.join-choice-button {
+  min-height: 110px;
+  font-size: 1.25rem;
+  border: 2px solid white;
+}
+
+.big-red-button {
+  width: min(78vw, 430px);
+  aspect-ratio: 1 / 1;
+  display: block;
+  margin: 24px auto;
+  border: 12px solid #7f1d1d;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff5a5a, #dc2626 48%, #991b1b 100%);
+  color: white;
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 0 16px 0 #5f1111, 0 24px 38px rgba(0,0,0,0.45);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.big-red-button:active:not(:disabled) {
+  transform: translateY(10px);
+  box-shadow: 0 6px 0 #5f1111, 0 12px 24px rgba(0,0,0,0.4);
+}
+
+.big-red-button:disabled {
+  cursor: not-allowed;
+  background: #6b7280;
+  border-color: #374151;
+  box-shadow: 0 8px 0 #1f2937;
+  opacity: 0.85;
+}
+
+.buzzer-status {
+  min-height: 32px;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+/* Poengkortene og trykkefeltet ligger i samme rutenett. */
+.score-board-items {
+  display: contents;
+}
+
+.buzzer-host-panel {
+  margin: 0;
+  min-width: 0;
+  min-height: 112px;
+  padding: 16px;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #000000;
+  text-align: left;
+  overflow: hidden;
+}
+
+.buzzer-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.buzzer-host-panel h2 {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.buzzer-host-panel p {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+}
+
+.buzzer-reset-button {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  font-size: 0.78rem;
+}
+
+.buzz-list {
+  max-height: 112px;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  counter-reset: buzz-order;
+}
+
+.buzz-list li {
+  counter-increment: buzz-order;
+  margin: 5px 0;
+  padding: 7px 8px;
+  border-radius: 7px;
+  background: #e5e7eb;
+  color: #000000;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.buzz-list li::before {
+  content: counter(buzz-order) ". ";
+  color: #b91c1c;
+}
+
+.buzz-list li:first-child {
+  background: #bbf7d0;
+  border: 2px solid #16a34a;
+  font-size: 0.95rem;
+}
+
+.selected-game-code {
+  color: var(--yellow);
+  font-size: 1.6rem;
+  font-weight: bold;
+  letter-spacing: 5px;
+}
+
+@media (max-width: 520px) {
+  .join-choice-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Lokal beta-test */
+.beta-test-button {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 2500;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,0.75);
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.88);
+  color: white;
+  font-size: 0.78rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  backdrop-filter: blur(5px);
+}
+
+.beta-test-button:hover {
+  background: #374151;
+}
+
+.beta-test-button.active {
+  background: #166534;
+  border-color: #86efac;
+}
+
+.beta-mode-notice {
+  position: fixed;
+  left: 14px;
+  bottom: 58px;
+  z-index: 2499;
+  max-width: min(320px, calc(100vw - 28px));
+  padding: 9px 12px;
+  border: 1px solid #86efac;
+  border-radius: 9px;
+  background: rgba(22, 101, 52, 0.95);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: bold;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+body.beta-mode #gameCodeBox {
+  border-color: #86efac;
+}

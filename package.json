@@ -1,0 +1,13 @@
+{
+  "name": "kontor-jeopardy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jeopardy-spill med poengtavle og rød knapp for lagene",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
