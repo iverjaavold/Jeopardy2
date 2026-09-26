@@ -27,6 +27,37 @@ function apiListen(path, callback) {
   return () => source.close();
 }
 
+// Serverens klokke minus denne enhetens klokke, i millisekunder.
+let serverClockOffset = 0;
+
+// Nåtid etter serverklokka. Brukes til alle nedtellinger, så alle enheter viser det samme.
+function serverNow() {
+  return Date.now() + serverClockOffset;
+}
+
+// Måler avviket mot serverklokka flere ganger og bruker målingen med kortest svartid,
+// siden den er mest presis (samme prinsipp som NTP).
+async function syncServerClock(samples = 5) {
+  let best = null;
+
+  for (let i = 0; i < samples; i += 1) {
+    try {
+      const sentAt = Date.now();
+      const { now } = await apiRequest("/time");
+      const receivedAt = Date.now();
+      const roundTrip = receivedAt - sentAt;
+
+      if (!best || roundTrip < best.roundTrip) {
+        best = { roundTrip, offset: now + roundTrip / 2 - receivedAt };
+      }
+    } catch (error) {
+      console.warn("Kunne ikke hente servertid.", error);
+    }
+  }
+
+  if (best) serverClockOffset = best.offset;
+}
+
 async function backendGameExists(code) {
   return (await apiRequest(`/games/${code}`, { allowMissing: true })) !== null;
 }

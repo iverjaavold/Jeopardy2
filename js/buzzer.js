@@ -21,7 +21,7 @@ function getBuzzerGate() {
   const presses = getQuestionBuzzes();
   const lastPress = presses[presses.length - 1] || null;
   const openAt = Math.max(buzzerUnlockAt, lastPress ? lastPress.pressedAt + BUZZ_LOCK_MS : 0);
-  const secondsLeft = Math.ceil((openAt - Date.now()) / 1000);
+  const secondsLeft = Math.ceil((openAt - serverNow()) / 1000);
 
   if (secondsLeft <= 0) return { state: "open", presses, lastPress };
   return { state: lastPress ? "answering" : "thinking", secondsLeft, presses, lastPress };
@@ -153,7 +153,7 @@ function startBuzzerGateListening() {
       updateBuzzerAvailability();
     });
 
-    buzzerGateInterval = setInterval(updateBuzzerAvailability, 250);
+    buzzerGateInterval = setInterval(updateBuzzerAvailability, 100);
   } catch (error) {
     console.error(error);
     const status = document.getElementById("buzzerStatus");

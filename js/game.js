@@ -182,7 +182,7 @@ async function openQuestion(categoryIndex, clueIndex) {
   document.getElementById("modalBackdrop").style.display = "flex";
 
   activeQuestionId = currentQuestion.id;
-  buzzerUnlockAt = Date.now() + 60000;
+  buzzerUnlockAt = serverNow() + 60000;
   latestBuzzes = [];
   renderQuestionBuzzResult([]);
   startQuestionTimer();
@@ -223,7 +223,7 @@ function startQuestionTimer() {
   };
 
   updateTimer();
-  questionTimerInterval = setInterval(updateTimer, 250);
+  questionTimerInterval = setInterval(updateTimer, 100);
 }
 
 function stopQuestionTimer() {

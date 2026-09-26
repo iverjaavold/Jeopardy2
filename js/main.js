@@ -2,8 +2,17 @@
   Oppstart og globale hendelser.
 */
 
+const CLOCK_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+
 document.addEventListener("DOMContentLoaded", function() {
   renderQuestionSetPicker();
+
+  // Hold klokka i takt med serveren, også etter at en telefon har vært i dvale.
+  syncServerClock();
+  setInterval(syncServerClock, CLOCK_SYNC_INTERVAL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") syncServerClock();
+  });
 
   // Lukk regler hvis man klikker utenfor modalen
   document.getElementById("rulesBackdrop").addEventListener("click", function(e) {

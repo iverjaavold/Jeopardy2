@@ -282,6 +282,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Serverklokka er felles referanse, så alle enheter viser samme nedtelling.
+  if (pathname === "/api/time") {
+    sendJson(res, 200, { now: Date.now() });
+    return;
+  }
+
   const apiMatch = pathname.match(/^\/api\/(games|buzzers)\/(\d{4})(\/events)?$/);
 
   if (!apiMatch) {
