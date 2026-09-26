@@ -69,3 +69,12 @@ Et spørsmålssett er ett helt spillebrett med navn, kategorier og spørsmål. V
 Settene lagres i nettleseren til den som lager dem, ikke på serveren. Eksporter settene du vil beholde. Nettleseren har begrenset plass (omtrent 5 MB), så bruk bildelenker hvis du har mange bilder.
 
 Standardsettet ligger i `js/questions.js`.
+
+## Passord og regler
+
+**Lag spill** krever et passord. Serveren sjekker det, så det står ikke i koden som sendes til nettleseren. Standardpassordet er `1234`. Slik bytter du det:
+
+1. Gå til tjenesten `kontor-jeopardy` på Render og velg **Environment**.
+2. Legg til variabelen `HOST_PASSWORD` med det nye passordet, og lagre. Render starter serveren på nytt.
+
+**Reglene** endres fra «📋 Regler» → «✏️ Endre regler» (bare for spillverten). De lagres i vertens nettleser og sendes med spillet, så lagene ser dem i spilloversikten.
