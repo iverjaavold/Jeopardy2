@@ -1,24 +1,165 @@
 /*
-  Redigering av kategorier og spørsmål.
+  Redigering av spørsmålssett: navn, kategorier, spørsmål og bilder.
 */
 
-function openQuestionEditor() {
+const MAX_IMAGE_SIDE = 1280;
+const IMAGE_QUALITY = 0.8;
+
+function createBlankClues() {
+  return [100, 200, 300, 400, 500].map(value => ({ value, question: "", answer: "" }));
+}
+
+// isNewSet = true lager et nytt, tomt sett. Ellers redigeres settet som er valgt.
+function openQuestionEditor(isNewSet = false) {
   if (currentQuestion) {
     alert("Lukk det aktive spørsmålet før du endrer spørsmålene.");
     return;
   }
 
-  editorDraftQuestions = cloneQuestions(QUESTIONS);
+  const nameInput = document.getElementById("questionSetNameInput");
+
+  if (isNewSet) {
+    editorSetId = null;
+    editorDraftQuestions = [{ category: "Kategori 1", clues: createBlankClues() }];
+    nameInput.value = "";
+  } else {
+    editorSetId = activeSetId;
+    editorDraftQuestions = cloneQuestions(QUESTIONS);
+    nameInput.value = getActiveQuestionSet().name;
+  }
+
+  document.getElementById("questionEditorTitle").textContent =
+    isNewSet ? "＋ Nytt spørsmålssett" : "✏️ Rediger spørsmålssett";
   document.getElementById("questionEditorStatus").textContent = "";
   renderQuestionEditor();
   document.getElementById("questionEditorBackdrop").style.display = "flex";
   document.body.style.overflow = "hidden";
+  if (isNewSet) nameInput.focus();
+}
+
+function createQuestionSet() {
+  openQuestionEditor(true);
 }
 
 function closeQuestionEditor() {
   document.getElementById("questionEditorBackdrop").style.display = "none";
   document.body.style.overflow = "";
   editorDraftQuestions = [];
+  editorSetId = null;
+}
+
+// Krymper bildet og gjør det om til en data-URL, så det kan lagres sammen med settet.
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#ffffff"; // gjennomsiktige PNG-er får hvit bakgrunn i stedet for svart
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Kunne ikke lese bildet."));
+    };
+
+    image.src = url;
+  });
+}
+
+async function attachImageFile(categoryIndex, clueIndex, file) {
+  if (!file) return;
+
+  const status = document.getElementById("questionEditorStatus");
+  try {
+    editorDraftQuestions[categoryIndex].clues[clueIndex].image = await readImageFile(file);
+    status.textContent = "";
+  } catch (error) {
+    status.textContent = "Kunne ikke lese bildet. Prøv et JPG- eller PNG-bilde.";
+    return;
+  }
+  renderQuestionEditor();
+}
+
+function attachImageLink(categoryIndex, clueIndex) {
+  const clue = editorDraftQuestions[categoryIndex].clues[clueIndex];
+  const current = clue.image && !clue.image.startsWith("data:") ? clue.image : "";
+  const link = prompt("Lim inn lenken til bildet (må starte med https://):", current);
+
+  if (link === null) return;
+
+  const trimmed = link.trim();
+  if (!/^https?:\/\/\S+$/i.test(trimmed)) {
+    document.getElementById("questionEditorStatus").textContent =
+      "Bildelenken må starte med http:// eller https://.";
+    return;
+  }
+
+  clue.image = trimmed;
+  document.getElementById("questionEditorStatus").textContent = "";
+  renderQuestionEditor();
+}
+
+function removeClueImage(categoryIndex, clueIndex) {
+  delete editorDraftQuestions[categoryIndex].clues[clueIndex].image;
+  renderQuestionEditor();
+}
+
+function createImageField(categoryIndex, clueIndex, clue) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "editor-image-field";
+
+  if (clue.image) {
+    const preview = document.createElement("img");
+    preview.className = "editor-image-preview";
+    preview.src = clue.image;
+    preview.alt = `Bilde til spørsmål ${clueIndex + 1}`;
+    wrapper.appendChild(preview);
+  }
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.hidden = true;
+  fileInput.addEventListener("change", event =>
+    attachImageFile(categoryIndex, clueIndex, event.target.files[0])
+  );
+
+  const uploadButton = document.createElement("button");
+  uploadButton.type = "button";
+  uploadButton.className = "btn-secondary editor-image-button";
+  uploadButton.textContent = clue.image ? "📷 Bytt bilde" : "📷 Last opp bilde";
+  uploadButton.onclick = () => fileInput.click();
+
+  const linkButton = document.createElement("button");
+  linkButton.type = "button";
+  linkButton.className = "btn-secondary editor-image-button";
+  linkButton.textContent = "🔗 Bildelenke";
+  linkButton.onclick = () => attachImageLink(categoryIndex, clueIndex);
+
+  wrapper.append(fileInput, uploadButton, linkButton);
+
+  if (clue.image) {
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "btn-secondary editor-image-button";
+    removeButton.textContent = "Fjern bilde";
+    removeButton.onclick = () => removeClueImage(categoryIndex, clueIndex);
+    wrapper.appendChild(removeButton);
+  }
+
+  return wrapper;
 }
 
 function createEditorField(labelText, element) {
@@ -106,7 +247,8 @@ function renderQuestionEditor() {
         createEditorField("Poeng", valueInput),
         createEditorField(`Spørsmål ${clueIndex + 1}`, questionInput),
         createEditorField("Riktig svar", answerInput),
-        removeClueButton
+        removeClueButton,
+        createImageField(categoryIndex, clueIndex, clue)
       );
       clues.appendChild(row);
     });
@@ -174,7 +316,7 @@ function removeEditorClue(categoryIndex, clueIndex) {
 }
 
 function resetEditorQuestions() {
-  if (!confirm("Vil du hente tilbake alle standardkategoriene og standardspørsmålene?")) return;
+  if (!confirm("Vil du erstatte alle spørsmålene i dette settet med standardspørsmålene?")) return;
   editorDraftQuestions = cloneQuestions(DEFAULT_QUESTIONS);
   document.getElementById("questionEditorStatus").textContent = "";
   renderQuestionEditor();
@@ -182,6 +324,13 @@ function resetEditorQuestions() {
 
 async function saveQuestionChanges() {
   const status = document.getElementById("questionEditorStatus");
+  const setName = document.getElementById("questionSetNameInput").value.trim();
+
+  if (!setName) {
+    status.textContent = "Gi spørsmålssettet et navn.";
+    document.getElementById("questionSetNameInput").focus();
+    return;
+  }
 
   if (!editorDraftQuestions.length) {
     status.textContent = "Legg til minst én kategori.";
@@ -212,8 +361,9 @@ async function saveQuestionChanges() {
         status.textContent = `Spørsmål ${clueIndex + 1} i «${category.category}» må ha en gyldig poengsum.`;
         return;
       }
-      if (!clue.question) {
-        status.textContent = `Spørsmål ${clueIndex + 1} i «${category.category}» mangler spørsmålstekst.`;
+      if (!clue.image) delete clue.image;
+      if (!clue.question && !clue.image) {
+        status.textContent = `Spørsmål ${clueIndex + 1} i «${category.category}» mangler spørsmålstekst eller bilde.`;
         return;
       }
       if (!clue.answer) {
@@ -228,14 +378,13 @@ async function saveQuestionChanges() {
     return;
   }
 
-  QUESTIONS = cloneQuestions(editorDraftQuestions);
-  usedQuestions = new Set();
-
-  try {
-    localStorage.setItem(QUESTION_STORAGE_KEY, JSON.stringify(QUESTIONS));
-  } catch (error) {
-    console.warn("Kunne ikke lagre spørsmål lokalt.", error);
+  if (!storeQuestionSet(editorSetId, setName, editorDraftQuestions)) {
+    status.textContent =
+      "Det er ikke nok lagringsplass i nettleseren. Bruk færre eller mindre bilder, bildelenker, eller slett et annet sett.";
+    return;
   }
+
+  usedQuestions = new Set();
 
   const gamePanel = document.getElementById("gamePanel");
   if (gamePanel && !gamePanel.classList.contains("hidden")) {

@@ -19,9 +19,10 @@ jeopardy-app/
 │   └── components.css    Trykkresultat, spørsmålsredigering og ekstra poeng
 └── js/
     ├── questions.js      Standardspørsmålene – rediger dem her
+    ├── question-sets.js  Spørsmålssett: velge, lagre, importere og eksportere
     ├── state.js          Felles variabler (lag, poeng, spillkode osv.)
     ├── backend.js        Snakker med serveren (lagring og live-oppdateringer)
-    ├── editor.js         «Endre spørsmål»-vinduet
+    ├── editor.js         Redigering av spørsmålssett, inkludert bilder
     ├── navigation.js     Forside, bli med, valg, regler, vert/seer-modus
     ├── buzzer.js         Den røde knappen og trykkelisten
     ├── game.js           Spillebrett, spørsmål, timer og poeng
@@ -56,7 +57,15 @@ Når du endrer filene i repoet, publiserer Render den nye versjonen automatisk.
 - Spill uten aktivitet på 12 timer ryddes bort automatisk.
 - Spillene lagres bare i minnet. De forsvinner når serveren sover, starter på nytt eller publiseres på nytt. Mens dere spiller, lagres spillet hele tiden, og det holder serveren våken.
 
-## Endre spørsmål
+## Spørsmålssett
 
-- **Permanent:** endre `js/questions.js`.
-- **Fra appen:** trykk «✏️ Endre spørsmål». Endringene lagres i nettleseren.
+Et spørsmålssett er ett helt spillebrett med navn, kategorier og spørsmål. Velg sett under **Spørsmålssett** før du starter spillet.
+
+- **＋ Nytt sett:** lag et nytt brett og gi det et navn.
+- **✏️ Rediger:** endre settet som er valgt. Under spillet finnes også «✏️ Endre spørsmål».
+- **Bilder:** hvert spørsmål kan ha et bilde, enten lastet opp eller som lenke. Opplastede bilder krympes automatisk. Et spørsmål kan være bare et bilde, uten tekst.
+- **Eksporter / Importer:** lagre settet som en `.json`-fil, og last det inn på en annen maskin eller i en annen nettleser.
+
+Settene lagres i nettleseren til den som lager dem, ikke på serveren. Eksporter settene du vil beholde. Nettleseren har begrenset plass (omtrent 5 MB), så bruk bildelenker hvis du har mange bilder.
+
+Standardsettet ligger i `js/questions.js`.

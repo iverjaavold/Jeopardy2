@@ -8,8 +8,10 @@
   - value: Poengsum
   - question: Spørsmålet
   - answer: Riktig svar
+  - image: (valgfritt) lenke til et bilde som vises sammen med spørsmålet
 
   Du kan legge til flere kategorier eller spørsmål.
+  Dette er standardsettet. Egne spørsmålssett lages i appen.
 */
 
 let QUESTIONS = [
@@ -166,17 +168,8 @@ let QUESTIONS = [
 ];
 
 
+// Standardsettet. Spørsmålssettene i question-sets.js bytter ut QUESTIONS ved oppstart.
 const DEFAULT_QUESTIONS = JSON.parse(JSON.stringify(QUESTIONS));
-const QUESTION_STORAGE_KEY = "kontorJeopardyCustomQuestionsV1";
-
-try {
-  const savedQuestions = JSON.parse(localStorage.getItem(QUESTION_STORAGE_KEY) || "null");
-  if (Array.isArray(savedQuestions) && savedQuestions.length > 0) {
-    QUESTIONS = savedQuestions;
-  }
-} catch (error) {
-  console.warn("Kunne ikke laste egendefinerte spørsmål.", error);
-}
 
 function cloneQuestions(source) {
   return JSON.parse(JSON.stringify(source));

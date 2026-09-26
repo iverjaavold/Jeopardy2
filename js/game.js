@@ -162,13 +162,15 @@ async function openQuestion(categoryIndex, clueIndex) {
     category: category.category,
     value: clue.value,
     question: clue.question,
-    answer: clue.answer
+    answer: clue.answer,
+    image: clue.image || ""
   };
 
   document.getElementById("modalCategory").textContent =
     `${currentQuestion.category} - ${currentQuestion.value} poeng`;
 
   document.getElementById("modalQuestion").textContent = currentQuestion.question;
+  showQuestionImage(currentQuestion.image);
 
   const answerBox = document.getElementById("modalAnswer");
   answerBox.style.display = "none";
@@ -186,6 +188,16 @@ async function openQuestion(categoryIndex, clueIndex) {
   startQuestionTimer();
   await saveGame(false);
   await resetBuzzers(false);
+}
+
+function showQuestionImage(src) {
+  const image = document.getElementById("modalImage");
+  if (src) {
+    image.src = src;
+  } else {
+    image.removeAttribute("src");
+  }
+  image.classList.toggle("hidden", !src);
 }
 
 function startQuestionTimer() {

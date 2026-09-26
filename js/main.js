@@ -3,6 +3,8 @@
 */
 
 document.addEventListener("DOMContentLoaded", function() {
+  renderQuestionSetPicker();
+
   // Lukk regler hvis man klikker utenfor modalen
   document.getElementById("rulesBackdrop").addEventListener("click", function(e) {
     if (e.target === this) {

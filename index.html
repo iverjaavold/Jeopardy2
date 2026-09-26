@@ -89,6 +89,21 @@
     </section>
 
     <section id="setupPanel" class="panel">
+      <div class="question-set-picker">
+        <h2>Spørsmålssett</h2>
+        <p>Velg hvilket spillebrett dere skal spille, eller lag et nytt.</p>
+        <select id="questionSetSelect" aria-label="Velg spørsmålssett" onchange="selectQuestionSet(this.value)"></select>
+        <p id="questionSetInfo" class="question-set-info"></p>
+        <div class="question-set-actions">
+          <button class="btn-secondary" onclick="openQuestionEditor()">✏️ Rediger</button>
+          <button class="btn-secondary" onclick="createQuestionSet()">＋ Nytt sett</button>
+          <button class="btn-secondary" onclick="chooseQuestionSetFile()">Importer</button>
+          <button class="btn-secondary" onclick="exportQuestionSet()">Eksporter</button>
+          <button class="btn-secondary" onclick="deleteQuestionSet()">🗑 Slett</button>
+        </div>
+        <input id="questionSetImportInput" type="file" accept=".json,application/json" hidden onchange="importQuestionSet(event)" />
+      </div>
+
       <h2>Legg inn lag</h2>
       <p>Skriv inn navn på lagene som skal spille.</p>
 
@@ -98,7 +113,6 @@
       </div>
 
       <button class="btn-secondary" onclick="addTeamInput()">Legg til lag</button>
-      <button class="btn-secondary" onclick="openQuestionEditor()">✏️ Endre spørsmål</button>
       <button class="btn-primary" onclick="startGame()">Start spillet</button>
       <button class="btn-secondary" onclick="backToLanding()">Tilbake til forsiden</button>
     </section>
@@ -147,15 +161,20 @@
     <div class="question-editor-modal">
       <div class="question-editor-header">
         <div>
-          <h2 id="questionEditorTitle">✏️ Endre spørsmål og kategorier</h2>
-          <p>Tilpass hele spillebrettet før dere starter.</p>
+          <h2 id="questionEditorTitle">✏️ Rediger spørsmålssett</h2>
+          <p>Gi settet et navn og fyll inn kategorier, spørsmål og bilder.</p>
         </div>
         <button class="editor-close-button" onclick="closeQuestionEditor()" aria-label="Lukk redigering">✕</button>
       </div>
 
       <div class="question-editor-content">
+        <div class="editor-field editor-set-name">
+          <label for="questionSetNameInput">Navn på spørsmålssettet</label>
+          <input id="questionSetNameInput" type="text" maxlength="80" placeholder="For eksempel «Julebordet 2026»" />
+        </div>
         <div class="editor-help">
           Endre kategorinavn, poeng, spørsmål og fasit. Du kan også legge til eller fjerne kategorier og spørsmål.
+          Et spørsmål kan ha et bilde, enten lastet opp eller som lenke. Opplastede bilder krympes automatisk og lagres i denne nettleseren.
         </div>
         <p id="questionEditorStatus" class="editor-status" aria-live="polite"></p>
         <div id="questionEditorCategories"></div>
@@ -164,11 +183,11 @@
       <div class="question-editor-footer">
         <div class="editor-footer-group">
           <button class="btn-primary" onclick="addEditorCategory()">＋ Legg til kategori</button>
-          <button class="btn-secondary" onclick="resetEditorQuestions()">Tilbakestill standard</button>
+          <button class="btn-secondary" onclick="resetEditorQuestions()">Fyll med standardspørsmål</button>
         </div>
         <div class="editor-footer-group">
           <button class="btn-secondary" onclick="closeQuestionEditor()">Avbryt</button>
-          <button class="btn-green" onclick="saveQuestionChanges()">Lagre endringer</button>
+          <button class="btn-green" onclick="saveQuestionChanges()">Lagre sett</button>
         </div>
       </div>
     </div>
@@ -253,6 +272,7 @@
     <div class="modal">
       <h2 id="modalCategory"></h2>
       <div id="modalQuestion" class="question-text"></div>
+      <img id="modalImage" class="question-image hidden" alt="Bilde til spørsmålet" />
 
       <div id="questionTimer" class="question-timer" aria-live="polite">Tid igjen: 60 sek</div>
 
@@ -294,6 +314,7 @@
 
   <!-- Rekkefølgen er viktig: data og tilstand først, deretter funksjonene som bruker dem. -->
   <script src="js/questions.js"></script>
+  <script src="js/question-sets.js"></script>
   <script src="js/state.js"></script>
   <script src="js/backend.js"></script>
   <script src="js/editor.js"></script>

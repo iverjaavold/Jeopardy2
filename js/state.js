@@ -4,6 +4,7 @@
 */
 
 let editorDraftQuestions = [];
+let editorSetId = null; // null = nytt spørsmålssett
 
 let teams = [];
 let usedQuestions = new Set();

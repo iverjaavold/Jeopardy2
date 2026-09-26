@@ -2,11 +2,36 @@
   Lagring, lasting og live-synkronisering av spilltilstanden.
 */
 
+// Bildene holdes utenfor brettet som synkes, så hver lagring blir liten.
+// Bare bildet til det åpne spørsmålet sendes med (i activeQuestion).
+function questionsWithoutImages(questions) {
+  return questions.map(category => ({
+    category: category.category,
+    clues: category.clues.map(({ image, ...clue }) => clue)
+  }));
+}
+
+// Henter bildene fra det lokale spørsmålssettet når et lagret spill lastes inn igjen.
+function restoreImagesFromSet(setId) {
+  const set = setId ? getQuestionSet(setId) : null;
+  if (!set) return;
+
+  QUESTIONS.forEach((category, categoryIndex) => {
+    category.clues.forEach((clue, clueIndex) => {
+      const localClue = set.questions[categoryIndex]?.clues[clueIndex];
+      if (localClue?.image && localClue.question === clue.question) {
+        clue.image = localClue.image;
+      }
+    });
+  });
+}
+
 function getGameState() {
   return {
     gameCode: currentGameCode,
+    setId: activeSetId,
     teams: teams,
-    questions: QUESTIONS,
+    questions: questionsWithoutImages(QUESTIONS),
     usedQuestions: Array.from(usedQuestions),
     currentTeamIndex: currentTeamIndex,
     activeQuestionId: activeQuestionId,
@@ -14,7 +39,8 @@ function getGameState() {
       id: currentQuestion.id,
       category: currentQuestion.category,
       value: currentQuestion.value,
-      question: currentQuestion.question
+      question: currentQuestion.question,
+      image: currentQuestion.image || ""
     } : null,
     buzzerUnlockAt: buzzerUnlockAt,
     updatedAt: new Date().toISOString()
@@ -30,6 +56,7 @@ function applyGameState(state) {
   teams = state.teams || [];
   if (Array.isArray(state.questions) && state.questions.length > 0) {
     QUESTIONS = cloneQuestions(state.questions);
+    restoreImagesFromSet(state.setId);
   }
   usedQuestions = new Set(state.usedQuestions || []);
   currentTeamIndex = state.currentTeamIndex || 0;
@@ -125,9 +152,10 @@ function startLiveUpdates(showConfirmation = true, code = currentGameCode) {
 function syncLiveQuestion(activeQuestion) {
   const backdrop = document.getElementById("modalBackdrop");
 
-  if (!activeQuestion || !activeQuestion.id || !activeQuestion.question) {
+  if (!activeQuestion || !activeQuestion.id || (!activeQuestion.question && !activeQuestion.image)) {
     stopQuestionTimer();
     currentQuestion = null;
+    showQuestionImage("");
     if (backdrop) backdrop.style.display = "none";
     return;
   }
@@ -136,13 +164,15 @@ function syncLiveQuestion(activeQuestion) {
     id: activeQuestion.id,
     category: activeQuestion.category || "Spørsmål",
     value: activeQuestion.value || "",
-    question: activeQuestion.question,
-    answer: ""
+    question: activeQuestion.question || "",
+    answer: "",
+    image: activeQuestion.image || ""
   };
 
   document.getElementById("modalCategory").textContent =
     `${currentQuestion.category}${currentQuestion.value !== "" ? ` - ${currentQuestion.value} poeng` : ""}`;
   document.getElementById("modalQuestion").textContent = currentQuestion.question;
+  showQuestionImage(currentQuestion.image);
 
   const answerBox = document.getElementById("modalAnswer");
   answerBox.style.display = "none";
