@@ -3,11 +3,21 @@
 */
 
 const API_BASE = "/api";
+const HOST_PASSWORD_KEY = "jeopardyHostPassword";
 
-async function apiRequest(path, { method = "GET", body, allowMissing = false } = {}) {
+function getHostPassword() {
+  return sessionStorage.getItem(HOST_PASSWORD_KEY) || "";
+}
+
+async function apiRequest(path, { method = "GET", body, allowMissing = false, password = getHostPassword() } = {}) {
+  const headers = {};
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  // Serveren krever vertens passord for å lagre spill og nullstille knappen.
+  if (password) headers["X-Host-Password"] = encodeURIComponent(password);
+
   const response = await fetch(`${API_BASE}${path}`, {
     method,
-    headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+    headers,
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -56,6 +66,17 @@ async function syncServerClock(samples = 5) {
   }
 
   if (best) serverClockOffset = best.offset;
+}
+
+// Returnerer true hvis serveren godtar passordet.
+async function backendCheckHostPassword(password) {
+  try {
+    await apiRequest("/host/login", { method: "POST", password });
+    return true;
+  } catch (error) {
+    if (error.status === 401) return false;
+    throw error;
+  }
 }
 
 async function backendGameExists(code) {

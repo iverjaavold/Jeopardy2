@@ -16,6 +16,8 @@ const zlib = require("zlib");
 const crypto = require("crypto");
 
 const PORT = process.env.PORT || 3000;
+// Passordet for å lage og styre spill. Sett HOST_PASSWORD på Render for å bytte det.
+const HOST_PASSWORD = process.env.HOST_PASSWORD || "1234";
 const ROOT = __dirname;
 const PUBLIC_PATHS = ["index.html", "css/", "js/", "assets/"];
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
@@ -92,6 +94,15 @@ function readJsonBody(req) {
   });
 }
 
+// Passordet sendes URL-kodet i en header, så æ, ø og å fungerer.
+function isHostRequest(req) {
+  try {
+    return decodeURIComponent(req.headers["x-host-password"] || "") === HOST_PASSWORD;
+  } catch (error) {
+    return false;
+  }
+}
+
 function currentValue(channel) {
   const [kind, code] = channel.split("/");
   if (kind === "games") return games.has(code) ? games.get(code) : null;
@@ -144,6 +155,7 @@ async function handleApi(req, res, kind, code, isEvents) {
     }
 
     if (req.method === "PUT") {
+      if (!isHostRequest(req)) return sendJson(res, 401, { error: "Feil passord." });
       const state = await readJsonBody(req);
       if (!state || typeof state !== "object") return sendJson(res, 400, { error: "Mangler spilltilstand." });
       games.set(code, state);
@@ -187,6 +199,7 @@ async function handleApi(req, res, kind, code, isEvents) {
     }
 
     if (req.method === "DELETE") {
+      if (!isHostRequest(req)) return sendJson(res, 401, { error: "Feil passord." });
       buzzers.delete(code);
       buzzLockedUntil.delete(code);
       broadcast(channel);
@@ -286,6 +299,13 @@ const server = http.createServer(async (req, res) => {
   if (pathname === "/api/time") {
     sendJson(res, 200, { now: Date.now() });
     return;
+  }
+
+  if (pathname === "/api/host/login") {
+    if (req.method !== "POST") return sendJson(res, 405, { error: "Metoden er ikke tillatt." });
+    return isHostRequest(req)
+      ? sendJson(res, 200, { ok: true })
+      : sendJson(res, 401, { error: "Feil passord." });
   }
 
   const apiMatch = pathname.match(/^\/api\/(games|buzzers)\/(\d{4})(\/events)?$/);

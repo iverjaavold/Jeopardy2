@@ -31,6 +31,29 @@
   </header>
 
   <main id="appMain" class="hidden">
+    <section id="hostPasswordPanel" class="panel join-status hidden">
+      <h2>Lag spill</h2>
+      <p>Skriv inn passordet for å lage et spill.</p>
+
+      <div class="join-form">
+        <input
+          id="hostPasswordInput"
+          class="join-code-input"
+          type="password"
+          autocomplete="off"
+          placeholder="••••"
+          aria-label="Passord"
+          onkeydown="if (event.key === 'Enter') submitHostPassword()"
+        />
+        <button class="btn-primary" style="width: 100%;" onclick="submitHostPassword()">
+          Fortsett
+        </button>
+      </div>
+
+      <p id="hostPasswordError" class="join-error" aria-live="polite"></p>
+      <button class="btn-secondary" onclick="backToLanding()">Tilbake til forsiden</button>
+    </section>
+
     <section id="joinPanel" class="panel join-status hidden">
       <h2>Bli med på spill</h2>
       <p>Skriv inn den firesifrede koden du fikk av spillverten.</p>
@@ -114,6 +137,7 @@
 
       <button class="btn-secondary" onclick="addTeamInput()">Legg til lag</button>
       <button class="btn-primary" onclick="startGame()">Start spillet</button>
+      <button class="btn-secondary" onclick="showRules()">📋 Regler</button>
       <button class="btn-secondary" onclick="backToLanding()">Tilbake til forsiden</button>
     </section>
 
@@ -249,22 +273,27 @@
     <div class="rules-modal">
       <button class="close-btn" onclick="closeRules()">✕</button>
       <h2>📋 Spilleregler</h2>
-      <ul>
-        <li><strong>Mål:</strong> Få så mange poeng som mulig ved å svare riktig på spørsmål.</li>
-        <li><strong>60 sekunders tenketid:</strong> Alle lag kan diskutere spørsmålet i 60 sekunder. Den røde knappen er låst fram til tiden er ute.</li>
-        <li><strong>Førstemann til knappen:</strong> Etter 60 sekunder får laget som trykker først på den røde knappen, svare. Knappen låses da for alle i 20 sekunder mens laget svarer.</li>
-        <li><strong>Neste lag får sjansen:</strong> Hvis laget svarer feil, åpner knappen igjen etter de 20 sekundene, og laget som trykker først da, får svare. Slik fortsetter det til spillverten lukker spørsmålet.</li>
-        <li><strong>Én svarkarantene:</strong> Et lag som svarer feil, får én svarkarantene og kan ikke svare på neste svarmulighet i samme spørsmål.</li>
-        <li><strong>Kun ett svar:</strong> Når laget har gitt sitt endelige svar, kan det ikke endres etter at spillverten har vurdert det.</li>
-        <li><strong>Rimelig svartid:</strong> Laget som får ordet, må svare innen rimelig tid. Spillverten kan sende turen videre hvis laget bruker for lang tid.</li>
-        <li><strong>Ingen hjelpemidler:</strong> Mobil, nettsøk, KI og andre hjelpemidler er ikke tillatt med mindre spillverten sier noe annet.</li>
-        <li><strong>Ikke vær en bitch:</strong> Vis respekt, ikke ødelegg for andre lag, ikke rop ut svar og ikke krangle med spillverten.</li>
-        <li><strong>Spillverten bestemmer:</strong> Spillvertens vurdering av svar, trykkerekkefølge og poeng er endelig.</li>
-        <li><strong>Minuspoeng:</strong> Regelbrudd, juks, forstyrrelser eller dårlig oppførsel kan gi minuspoeng. Spillverten bestemmer hvor mange.</li>
-        <li><strong>Poeng:</strong> Riktig svar gir spørsmålets poengverdi. Feil svar kan gi null eller minuspoeng etter spillvertens vurdering.</li>
-        <li><strong>Ha det gøy:</strong> Konkurrer hardt, men vær grei med de andre spillerne.</li>
-        <li><strong>MØ!-bonus:</strong> Hvis du roper «MØ!» av full hals, får du 200 ekstra poeng.</li>
-      </ul>
+
+      <!-- Reglene fylles inn av js/rules.js -->
+      <div id="rulesView">
+        <ul id="rulesList"></ul>
+        <div class="rules-actions host-only">
+          <button class="btn-secondary" onclick="openRulesEditor()">✏️ Endre regler</button>
+        </div>
+      </div>
+
+      <div id="rulesEditor" class="rules-editor hidden">
+        <p class="rules-editor-help">Endre, legg til eller slett regler. Overskriften er valgfri. Lagene ser de nye reglene med en gang.</p>
+        <p id="rulesEditorStatus" class="editor-status" aria-live="polite"></p>
+        <div id="rulesEditorList" class="rules-editor-list"></div>
+        <div class="rules-actions">
+          <button class="btn-primary" onclick="addRule()">＋ Legg til regel</button>
+          <button class="btn-secondary" onclick="resetRulesToDefault()">Standardregler</button>
+          <span class="rules-actions-spacer"></span>
+          <button class="btn-secondary" onclick="cancelRulesEdit()">Avbryt</button>
+          <button class="btn-green" onclick="saveRules()">Lagre regler</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -316,6 +345,7 @@
   <script src="js/questions.js"></script>
   <script src="js/question-sets.js"></script>
   <script src="js/state.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/backend.js"></script>
   <script src="js/editor.js"></script>
   <script src="js/navigation.js"></script>

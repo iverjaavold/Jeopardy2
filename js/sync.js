@@ -43,6 +43,7 @@ function getGameState() {
       image: currentQuestion.image || ""
     } : null,
     buzzerUnlockAt: buzzerUnlockAt,
+    rules: rules,
     updatedAt: new Date().toISOString()
   };
 }
@@ -63,6 +64,7 @@ function applyGameState(state) {
   activeQuestionId = state.activeQuestionId || "";
   buzzerUnlockAt = Number(state.buzzerUnlockAt) || 0;
   currentGameCode = state.gameCode || currentGameCode;
+  setRulesFromGame(state.rules);
   updateGameCodeDisplay();
   updateHostBuzzerGateStatus();
 
@@ -93,6 +95,11 @@ async function saveGame(showConfirmation = true) {
     }
   } catch (error) {
     console.error(error);
+    if (error.status === 401) {
+      sessionStorage.removeItem(HOST_PASSWORD_KEY);
+      alert("Passordet er endret. Gå tilbake til forsiden og logg inn på nytt for å fortsette spillet.");
+      return;
+    }
     if (showConfirmation) alert("Kunne ikke lagre spill: " + error.message);
   }
 }
@@ -195,6 +202,7 @@ function applyGameStateLive(state) {
   activeQuestionId = state.activeQuestionId || "";
   buzzerUnlockAt = Number(state.buzzerUnlockAt) || 0;
   currentGameCode = state.gameCode || currentGameCode;
+  setRulesFromGame(state.rules);
   updateGameCodeDisplay();
   updateHostBuzzerGateStatus();
   syncLiveQuestion(state.activeQuestion || null);

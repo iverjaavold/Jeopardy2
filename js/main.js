@@ -6,6 +6,7 @@ const CLOCK_SYNC_INTERVAL_MS = 5 * 60 * 1000;
 
 document.addEventListener("DOMContentLoaded", function() {
   renderQuestionSetPicker();
+  renderRules();
 
   // Hold klokka i takt med serveren, også etter at en telefon har vært i dvale.
   syncServerClock();

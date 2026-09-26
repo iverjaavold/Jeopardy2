@@ -429,3 +429,71 @@
   max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
+
+/* Redigering av spilleregler */
+.rules-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.rules-actions-spacer {
+  flex: 1 1 auto;
+}
+
+.rules-editor-help {
+  margin: 0 0 8px;
+  color: #d4dcf7;
+}
+
+.rules-editor-list {
+  display: grid;
+  gap: 10px;
+}
+
+.rules-editor-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(200px, 2.2fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  background: rgba(3,7,30,.43);
+}
+
+.rules-editor-row input,
+.rules-editor-row textarea {
+  width: 100%;
+  margin: 0;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(4,8,30,.72);
+  color: #fff;
+  font: inherit;
+  outline: none;
+}
+
+.rules-editor-row input:focus,
+.rules-editor-row textarea:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 0 3px rgba(255,215,0,.16);
+}
+
+.rules-editor-row textarea {
+  min-height: 64px;
+  resize: vertical;
+  line-height: 1.35;
+}
+
+.rules-editor-row .editor-icon-button {
+  align-self: start;
+}
+
+@media (max-width: 640px) {
+  .rules-editor-row { grid-template-columns: 1fr; }
+  .rules-editor-row .editor-icon-button { width: 100%; }
+  .rules-actions-spacer { display: none; }
+}
