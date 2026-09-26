@@ -181,7 +181,7 @@ function syncLiveQuestion(activeQuestion) {
   cancelScoreAction();
   setHostMode(false);
   if (backdrop) backdrop.style.display = "flex";
-  renderQuestionBuzzResult(latestHostBuzzes);
+  renderQuestionBuzzResult(latestBuzzes);
   startQuestionTimer();
 }
 

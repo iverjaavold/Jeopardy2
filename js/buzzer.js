@@ -1,6 +1,31 @@
 /*
-  Den røde knappen: spillerside, vertens trykkeliste og låsing i 60 sekunder.
+  Den røde knappen: spillerside, vertens trykkeliste og låsing.
+  Knappen er låst de første 60 sekundene av et spørsmål. Hvert trykk låser den
+  for alle i nye 20 sekunder (BUZZ_LOCK_MS), helt til verten lukker spørsmålet.
 */
+
+function getQuestionBuzzes() {
+  return (latestBuzzes || [])
+    .filter(buzz => buzz.questionId === activeQuestionId && typeof buzz.pressedAt === "number")
+    .sort((a, b) => a.pressedAt - b.pressedAt);
+}
+
+// Tilstanden til knappen akkurat nå:
+//   waiting   – ingen spørsmål er åpent
+//   thinking  – de første 60 sekundene
+//   answering – noen har trykket, knappen er låst i 20 sekunder
+//   open      – knappen kan trykkes
+function getBuzzerGate() {
+  if (!activeQuestionId || !buzzerUnlockAt) return { state: "waiting", presses: [] };
+
+  const presses = getQuestionBuzzes();
+  const lastPress = presses[presses.length - 1] || null;
+  const openAt = Math.max(buzzerUnlockAt, lastPress ? lastPress.pressedAt + BUZZ_LOCK_MS : 0);
+  const secondsLeft = Math.ceil((openAt - Date.now()) / 1000);
+
+  if (secondsLeft <= 0) return { state: "open", presses, lastPress };
+  return { state: lastPress ? "answering" : "thinking", secondsLeft, presses, lastPress };
+}
 
 function openRedButtonSetup() {
   const select = document.getElementById("buzzerTeamSelect");
@@ -33,7 +58,7 @@ function showBigRedButton() {
   document.getElementById("buzzerSetupPanel").classList.add("hidden");
   document.getElementById("buzzerPanel").classList.remove("hidden");
   document.getElementById("buzzerTeamHeading").textContent = `Lag: ${selectedBuzzerTeam}`;
-  hasCurrentClientBuzz = false;
+  isSendingBuzz = false;
   document.getElementById("bigRedButton").disabled = true;
   document.getElementById("buzzerStatus").textContent =
     "Venter på at spillverten åpner et spørsmål.";
@@ -47,13 +72,12 @@ async function pressBuzzer() {
   const button = document.getElementById("bigRedButton");
   const status = document.getElementById("buzzerStatus");
 
-  if (!activeQuestionId || !buzzerUnlockAt || Date.now() < buzzerUnlockAt) {
+  if (isSendingBuzz || getBuzzerGate().state !== "open") {
     updateBuzzerAvailability();
     return;
   }
 
-  if (hasCurrentClientBuzz) return;
-
+  isSendingBuzz = true;
   button.disabled = true;
   status.textContent = "Sender …";
 
@@ -63,8 +87,15 @@ async function pressBuzzer() {
       clientId: buzzerClientId,
       questionId: activeQuestionId
     });
-    status.textContent = "Registrert! Vent til spillverten nullstiller knappen.";
+    isSendingBuzz = false;
+    updateBuzzerAvailability();
   } catch (error) {
+    isSendingBuzz = false;
+    if (error.status === 409) {
+      updateBuzzerAvailability();
+      status.textContent = "For sent – et annet lag rakk å trykke først.";
+      return;
+    }
     console.error(error);
     button.disabled = false;
     status.textContent = "Kunne ikke sende. Trykk på nytt.";
@@ -73,7 +104,7 @@ async function pressBuzzer() {
 
 function leaveBuzzer() {
   selectedBuzzerTeam = "";
-  hasCurrentClientBuzz = false;
+  isSendingBuzz = false;
   stopBuzzListening();
   stopBuzzerGateListening();
   showJoinChoices();
@@ -96,24 +127,14 @@ function startBuzzListening(mode) {
           return timeA - timeB || a.key.localeCompare(b.key);
         });
 
+      latestBuzzes = sortedBuzzes;
+
       if (isHost || isOverview) {
-        latestHostBuzzes = sortedBuzzes;
         if (isHost) renderHostBuzzes(sortedBuzzes);
-        renderQuestionBuzzResult(sortedBuzzes);
+        renderQuestionBuzzResult();
+        updateHostBuzzerGateStatus();
       } else {
-        const myBuzz = sortedBuzzes.find(buzz => buzz.clientId === buzzerClientId);
-        const button = document.getElementById("bigRedButton");
-        const status = document.getElementById("buzzerStatus");
-
-        hasCurrentClientBuzz = Boolean(myBuzz);
-
-        if (!myBuzz) {
-          updateBuzzerAvailability();
-        } else {
-          if (button) button.disabled = true;
-          const place = sortedBuzzes.findIndex(buzz => buzz.key === myBuzz.key) + 1;
-          if (status) status.textContent = `Registrert som nummer ${place}! Vent på neste runde.`;
-        }
+        updateBuzzerAvailability();
       }
     });
   } catch (error) {
@@ -154,53 +175,60 @@ function stopBuzzerGateListening() {
 function updateBuzzerAvailability() {
   const button = document.getElementById("bigRedButton");
   const status = document.getElementById("buzzerStatus");
-  if (!button || !status || hasCurrentClientBuzz) return;
+  if (!button || !status || isSendingBuzz) return;
 
-  if (!activeQuestionId || !buzzerUnlockAt) {
+  const gate = getBuzzerGate();
+
+  if (gate.state === "waiting") {
     button.disabled = true;
     button.textContent = "VENT";
     status.textContent = "Venter på at spillverten åpner et spørsmål.";
     return;
   }
 
-  const millisecondsLeft = buzzerUnlockAt - Date.now();
-
-  if (millisecondsLeft > 0) {
-    const secondsLeft = Math.ceil(millisecondsLeft / 1000);
+  if (gate.state === "thinking") {
     button.disabled = true;
-    button.textContent = secondsLeft;
-    status.textContent = `Knappen er låst – åpner om ${secondsLeft} sekunder.`;
+    button.textContent = gate.secondsLeft;
+    status.textContent = `Knappen er låst – åpner om ${gate.secondsLeft} sekunder.`;
+    return;
+  }
+
+  if (gate.state === "answering") {
+    button.disabled = true;
+    button.textContent = gate.secondsLeft;
+    status.textContent = gate.lastPress.clientId === buzzerClientId
+      ? `Registrert! Dere har ordet. Knappen åpner igjen om ${gate.secondsLeft} sek.`
+      : `${gate.lastPress.team} trykket – knappen åpner igjen om ${gate.secondsLeft} sek.`;
     return;
   }
 
   button.disabled = false;
   button.textContent = "TRYKK!";
-  status.textContent = "Knappen er åpen – trykk nå!";
+  status.textContent = gate.presses.length
+    ? "Knappen er åpen igjen – trykk nå!"
+    : "Knappen er åpen – trykk nå!";
 }
 
 function updateHostBuzzerGateStatus() {
   const status = document.getElementById("hostBuzzerGateStatus");
   if (!status) return;
 
+  const gate = getBuzzerGate();
   status.classList.remove("waiting", "locked", "open");
 
-  if (!activeQuestionId || !buzzerUnlockAt) {
+  if (gate.state === "waiting") {
     status.classList.add("waiting");
     status.textContent = "Venter på at et spørsmål åpnes.";
-    return;
-  }
-
-  const millisecondsLeft = buzzerUnlockAt - Date.now();
-
-  if (millisecondsLeft > 0) {
-    const secondsLeft = Math.ceil(millisecondsLeft / 1000);
+  } else if (gate.state === "thinking") {
     status.classList.add("locked");
-    status.textContent = `Rød knapp låst – åpner om ${secondsLeft} sek`;
-    return;
+    status.textContent = `Rød knapp låst – åpner om ${gate.secondsLeft} sek`;
+  } else if (gate.state === "answering") {
+    status.classList.add("locked");
+    status.textContent = `${gate.lastPress.team} har ordet – knappen åpner igjen om ${gate.secondsLeft} sek`;
+  } else {
+    status.classList.add("open");
+    status.textContent = "Den røde knappen er åpen!";
   }
-
-  status.classList.add("open");
-  status.textContent = "Den røde knappen er åpen!";
 }
 
 function stopBuzzListening() {
@@ -210,39 +238,37 @@ function stopBuzzListening() {
   }
 }
 
-function renderQuestionBuzzResult(buzzes = latestHostBuzzes) {
+function renderQuestionBuzzResult() {
   const panel = document.getElementById("questionBuzzResult");
   if (!panel) return;
 
+  const gate = getBuzzerGate();
   panel.classList.remove("open", "winner");
 
-  if (!activeQuestionId || !buzzerUnlockAt) {
+  if (gate.state === "waiting") {
     panel.textContent = "Resultatet vises her når den røde knappen åpner.";
     return;
   }
 
-  if (Date.now() < buzzerUnlockAt) {
+  if (gate.state === "thinking") {
     panel.textContent = "Den røde knappen er fortsatt låst.";
     return;
   }
 
-  const validBuzzes = (buzzes || [])
-    .filter(buzz =>
-      buzz.questionId === activeQuestionId &&
-      typeof buzz.pressedAt === "number"
-    )
-    .sort((a, b) => a.pressedAt - b.pressedAt);
-
-  const firstBuzz = validBuzzes[0];
-
-  if (!firstBuzz) {
+  if (gate.state === "open") {
     panel.classList.add("open");
-    panel.textContent = "Knappen er åpen – venter på første trykk …";
+    panel.textContent = gate.presses.length
+      ? "Knappen er åpen igjen – venter på neste trykk …"
+      : "Knappen er åpen – venter på første trykk …";
     return;
   }
 
-  const elapsedMilliseconds = Math.max(0, firstBuzz.pressedAt - buzzerUnlockAt);
-  const elapsedSeconds = (elapsedMilliseconds / 1000).toLocaleString("no-NO", {
+  // Reaksjonstid regnes fra da knappen sist åpnet.
+  const previousPress = gate.presses[gate.presses.length - 2];
+  const openedAt = previousPress
+    ? Math.max(buzzerUnlockAt, previousPress.pressedAt + BUZZ_LOCK_MS)
+    : buzzerUnlockAt;
+  const elapsedSeconds = (Math.max(0, gate.lastPress.pressedAt - openedAt) / 1000).toLocaleString("no-NO", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
@@ -251,12 +277,13 @@ function renderQuestionBuzzResult(buzzes = latestHostBuzzes) {
   panel.replaceChildren();
 
   const winner = document.createElement("strong");
-  winner.textContent = `🏆 ${firstBuzz.team} trykket først!`;
+  winner.textContent = `🏆 ${gate.lastPress.team} trykket${previousPress ? "" : " først"}!`;
 
-  const reactionTime = document.createElement("span");
-  reactionTime.textContent = `${elapsedSeconds} sekunder etter at knappen åpnet`;
+  const details = document.createElement("span");
+  details.textContent =
+    `${elapsedSeconds} sekunder etter at knappen åpnet · åpner igjen om ${gate.secondsLeft} sek`;
 
-  panel.append(winner, reactionTime);
+  panel.append(winner, details);
 }
 
 function renderHostBuzzes(buzzes) {

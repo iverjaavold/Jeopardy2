@@ -22,7 +22,8 @@ const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const HEARTBEAT_MS = 25000;
 const IDLE_GAME_MS = 12 * 60 * 60 * 1000; // spill uten aktivitet så lenge ryddes bort
 const CLEANUP_INTERVAL_MS = 30 * 60 * 1000;
-const COMPRESSIBLE = new Set([".html", ".css", ".js", ".json", ".svg"]);
+const BUZZ_LOCK_MS = 20000; // knappen er låst for alle så lenge etter hvert trykk
+const COMPRESSIBLE =new Set([".html", ".css", ".js", ".json", ".svg"]);
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -40,6 +41,7 @@ const games = new Map();     // spillkode -> spilltilstand
 const buzzers = new Map();   // spillkode -> { id: trykk }
 const listeners = new Map(); // "games/1234" eller "buzzers/1234" -> Set med svar-strømmer
 const lastActivity = new Map(); // spillkode -> tidspunkt for siste endring
+const buzzLockedUntil = new Map(); // spillkode -> tidspunkt da knappen åpner igjen etter et trykk
 let buzzSequence = 0;
 
 function touch(code) {
@@ -53,6 +55,7 @@ function cleanupIdleGames() {
     if (listeners.has(`games/${code}`) || listeners.has(`buzzers/${code}`)) return;
     games.delete(code);
     buzzers.delete(code);
+    buzzLockedUntil.delete(code);
     lastActivity.delete(code);
   });
 }
@@ -162,6 +165,11 @@ async function handleApi(req, res, kind, code, isEvents) {
       }
 
       const pressedAt = Date.now();
+      if (pressedAt < (buzzLockedUntil.get(code) || 0)) {
+        return sendJson(res, 409, { error: "Et annet lag rakk å trykke først." });
+      }
+      buzzLockedUntil.set(code, pressedAt + BUZZ_LOCK_MS);
+
       buzzSequence += 1;
       const buzzId = `${pressedAt}-${String(buzzSequence).padStart(6, "0")}`;
 
@@ -180,6 +188,7 @@ async function handleApi(req, res, kind, code, isEvents) {
 
     if (req.method === "DELETE") {
       buzzers.delete(code);
+      buzzLockedUntil.delete(code);
       broadcast(channel);
       return sendJson(res, 200, { ok: true });
     }

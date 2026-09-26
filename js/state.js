@@ -12,7 +12,6 @@ let currentQuestion = null;
 let currentTeamIndex = 0;
 let isLiveMode = false;
 let questionTimerInterval = null;
-let questionTimeLeft = 60;
 let pendingScoreAction = null;
 let currentGameCode = "";
 let joinedGameState = null;
@@ -23,8 +22,10 @@ let unsubscribeLiveGame = null;
 let buzzerGateInterval = null;
 let buzzerUnlockAt = 0;
 let activeQuestionId = "";
-let latestHostBuzzes = [];
-let hasCurrentClientBuzz = false;
+let latestBuzzes = [];
+let isSendingBuzz = false;
+
+const BUZZ_LOCK_MS = 20000; // knappen er låst for alle så lenge etter hvert trykk
 
 const buzzerClientId = sessionStorage.getItem("jeopardyBuzzerClientId") ||
   (window.crypto?.randomUUID?.() || `client-${Date.now()}-${Math.random()}`);

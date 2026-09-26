@@ -82,7 +82,7 @@
 
     <section id="buzzerPanel" class="panel join-status hidden">
       <h2 id="buzzerTeamHeading">Klar?</h2>
-      <p>Knappen låses opp når spørsmålets 60 sekunder har gått.</p>
+      <p>Knappen låses opp når spørsmålets 60 sekunder har gått. Etter hvert trykk er den låst for alle i 20 sekunder.</p>
       <button id="bigRedButton" class="big-red-button" onclick="pressBuzzer()">TRYKK!</button>
       <p id="buzzerStatus" class="buzzer-status" aria-live="polite">Venter på at spillverten åpner et spørsmål.</p>
       <button class="btn-secondary" onclick="leaveBuzzer()">Tilbake</button>
@@ -252,8 +252,8 @@
       <ul>
         <li><strong>Mål:</strong> Få så mange poeng som mulig ved å svare riktig på spørsmål.</li>
         <li><strong>60 sekunders tenketid:</strong> Alle lag kan diskutere spørsmålet i 60 sekunder. Den røde knappen er låst fram til tiden er ute.</li>
-        <li><strong>Førstemann til knappen:</strong> Etter 60 sekunder får laget som trykker først på den røde knappen, svare først.</li>
-        <li><strong>Neste lag får sjansen:</strong> Hvis det første laget svarer feil, går svarmuligheten videre til neste lag i registrert trykkerekkefølge.</li>
+        <li><strong>Førstemann til knappen:</strong> Etter 60 sekunder får laget som trykker først på den røde knappen, svare. Knappen låses da for alle i 20 sekunder mens laget svarer.</li>
+        <li><strong>Neste lag får sjansen:</strong> Hvis laget svarer feil, åpner knappen igjen etter de 20 sekundene, og laget som trykker først da, får svare. Slik fortsetter det til spillverten lukker spørsmålet.</li>
         <li><strong>Én svarkarantene:</strong> Et lag som svarer feil, får én svarkarantene og kan ikke svare på neste svarmulighet i samme spørsmål.</li>
         <li><strong>Kun ett svar:</strong> Når laget har gitt sitt endelige svar, kan det ikke endres etter at spillverten har vurdert det.</li>
         <li><strong>Rimelig svartid:</strong> Laget som får ordet, må svare innen rimelig tid. Spillverten kan sende turen videre hvis laget bruker for lang tid.</li>

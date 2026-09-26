@@ -12,7 +12,11 @@ async function apiRequest(path, { method = "GET", body, allowMissing = false } =
   });
 
   if (allowMissing && response.status === 404) return null;
-  if (!response.ok) throw new Error(`Serveren svarte med feil ${response.status}.`);
+  if (!response.ok) {
+    const error = new Error(`Serveren svarte med feil ${response.status}.`);
+    error.status = response.status;
+    throw error;
+  }
   return response.json();
 }
 

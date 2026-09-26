@@ -183,7 +183,7 @@ async function openQuestion(categoryIndex, clueIndex) {
 
   activeQuestionId = currentQuestion.id;
   buzzerUnlockAt = Date.now() + 60000;
-  latestHostBuzzes = [];
+  latestBuzzes = [];
   renderQuestionBuzzResult([]);
   startQuestionTimer();
   await saveGame(false);
@@ -204,28 +204,26 @@ function startQuestionTimer() {
   stopQuestionTimer();
 
   const timerElement = document.getElementById("questionTimer");
-  timerElement.classList.remove("time-up");
 
+  // Går så lenge spørsmålet er åpent: 60 sek tenketid, så 20 sek svartid etter hvert trykk.
   const updateTimer = () => {
-    const millisecondsLeft = buzzerUnlockAt - Date.now();
-    questionTimeLeft = Math.max(0, Math.ceil(millisecondsLeft / 1000));
+    const gate = getBuzzerGate();
     updateHostBuzzerGateStatus();
     renderQuestionBuzzResult();
 
-    if (questionTimeLeft > 0) {
-      timerElement.textContent = `Tid igjen: ${questionTimeLeft} sek`;
-      return;
-    }
+    timerElement.classList.toggle("time-up", gate.state === "open");
 
-    stopQuestionTimer();
-    timerElement.textContent = "Den røde knappen er åpen!";
-    timerElement.classList.add("time-up");
+    if (gate.state === "thinking") {
+      timerElement.textContent = `Tid igjen: ${gate.secondsLeft} sek`;
+    } else if (gate.state === "answering") {
+      timerElement.textContent = `${gate.lastPress.team} har ordet: ${gate.secondsLeft} sek`;
+    } else if (gate.state === "open") {
+      timerElement.textContent = "Den røde knappen er åpen!";
+    }
   };
 
   updateTimer();
-  if (questionTimeLeft > 0) {
-    questionTimerInterval = setInterval(updateTimer, 250);
-  }
+  questionTimerInterval = setInterval(updateTimer, 250);
 }
 
 function stopQuestionTimer() {
