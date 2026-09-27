@@ -106,6 +106,7 @@
     <section id="buzzerPanel" class="panel join-status hidden">
       <h2 id="buzzerTeamHeading">Klar?</h2>
       <p>Knappen låses opp når spørsmålets 60 sekunder har gått. Etter hvert trykk er den låst for alle i 20 sekunder.</p>
+      <p class="buzzer-game-code">Spillkode: <strong id="buzzerGameCode">----</strong></p>
       <button id="bigRedButton" class="big-red-button" onclick="pressBuzzer()">TRYKK!</button>
       <p id="buzzerStatus" class="buzzer-status" aria-live="polite">Venter på at spillverten åpner et spørsmål.</p>
       <button class="btn-secondary" onclick="leaveBuzzer()">Tilbake</button>
@@ -145,6 +146,7 @@
       <div class="top-actions host-only">
         <button id="saveGameButton" class="btn-secondary" onclick="saveGame()">Lagre spill</button>
         <button id="loadGameButton" class="btn-secondary" onclick="loadGame()">Last spill</button>
+        <button id="undoButton" class="btn-secondary" onclick="undoLastQuestion()" disabled>↩️ Angre siste spørsmål</button>
         <button class="btn-secondary" onclick="resetGame()">Nullstill spill</button>
         <button class="btn-secondary" onclick="goBackToSetup()">Endre lag</button>
         <button class="btn-secondary" onclick="openQuestionEditor()">✏️ Endre spørsmål</button>
@@ -328,7 +330,8 @@
     <div class="modal">
       <h2 id="modalCategory"></h2>
       <div id="modalQuestion" class="question-text"></div>
-      <img id="modalImage" class="question-image hidden" alt="Bilde til spørsmålet" />
+      <img id="modalImage" class="question-image hidden" alt="Bilde til spørsmålet" onclick="openImageZoom()" />
+      <p id="modalImageHint" class="question-image-hint hidden">🔍 Trykk på bildet for å forstørre</p>
 
       <div id="questionTimer" class="question-timer" aria-live="polite">Tid igjen: 60 sek</div>
 
@@ -366,6 +369,14 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div id="imageZoomBackdrop" class="image-zoom-backdrop" role="dialog" aria-modal="true" aria-label="Forstørret bilde">
+    <div id="imageZoomScroller" class="image-zoom-scroller">
+      <img id="imageZoomImage" alt="Forstørret bilde til spørsmålet" onclick="toggleImageZoom(event)" />
+    </div>
+    <button class="image-zoom-close" onclick="closeImageZoom()" aria-label="Lukk forstørret bilde">✕</button>
+    <p class="image-zoom-hint">Trykk på bildet for å zoome inn og ut</p>
   </div>
 
   <!-- Rekkefølgen er viktig: data og tilstand først, deretter funksjonene som bruker dem. -->

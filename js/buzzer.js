@@ -62,6 +62,7 @@ function showBigRedButton() {
   document.getElementById("buzzerSetupPanel").classList.add("hidden");
   document.getElementById("buzzerPanel").classList.remove("hidden");
   document.getElementById("buzzerTeamHeading").textContent = `Lag: ${selectedBuzzerTeam}`;
+  document.getElementById("buzzerGameCode").textContent = currentGameCode || "----";
   isSendingBuzz = false;
   document.getElementById("bigRedButton").disabled = true;
   document.getElementById("buzzerStatus").textContent =

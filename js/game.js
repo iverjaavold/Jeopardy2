@@ -40,6 +40,7 @@ async function startGame() {
   }
 
   usedQuestions = new Set();
+  questionHistory = [];
   currentTeamIndex = 0;
   isLiveMode = false;
 
@@ -151,6 +152,8 @@ function renderBoard() {
 
     board.appendChild(questionRow);
   }
+
+  updateUndoButton();
 }
 
 async function openQuestion(categoryIndex, clueIndex) {
@@ -163,7 +166,9 @@ async function openQuestion(categoryIndex, clueIndex) {
     value: clue.value,
     question: clue.question,
     answer: clue.answer,
-    image: clue.image || ""
+    image: clue.image || "",
+    scoreChanges: [],                    // for «Angre»
+    previousTeamIndex: currentTeamIndex
   };
 
   document.getElementById("modalCategory").textContent =
@@ -193,11 +198,54 @@ async function openQuestion(categoryIndex, clueIndex) {
 function showQuestionImage(src) {
   const image = document.getElementById("modalImage");
   if (src) {
-    image.src = src;
+    if (image.getAttribute("src") !== src) image.src = src;
   } else {
     image.removeAttribute("src");
+    closeImageZoom();
   }
   image.classList.toggle("hidden", !src);
+  document.getElementById("modalImageHint").classList.toggle("hidden", !src);
+}
+
+// Fullskjermvisning av spørsmålsbildet. Trykk på bildet for å zoome inn der du trykket.
+const IMAGE_ZOOM_FACTOR = 2.5;
+
+function openImageZoom() {
+  const src = document.getElementById("modalImage").getAttribute("src");
+  if (!src) return;
+
+  const image = document.getElementById("imageZoomImage");
+  image.src = src;
+  image.classList.remove("zoomed");
+  image.style.width = "";
+  document.getElementById("imageZoomBackdrop").style.display = "flex";
+}
+
+function closeImageZoom() {
+  const backdrop = document.getElementById("imageZoomBackdrop");
+  if (backdrop) backdrop.style.display = "none";
+}
+
+function toggleImageZoom(event) {
+  const image = event.currentTarget;
+  const scroller = document.getElementById("imageZoomScroller");
+
+  if (image.classList.contains("zoomed")) {
+    image.classList.remove("zoomed");
+    image.style.width = "";
+    return;
+  }
+
+  const rect = image.getBoundingClientRect();
+  const focusX = (event.clientX - rect.left) / rect.width;
+  const focusY = (event.clientY - rect.top) / rect.height;
+
+  image.classList.add("zoomed");
+  image.style.width = `${rect.width * IMAGE_ZOOM_FACTOR}px`;
+
+  // Hold punktet man trykket på midt på skjermen.
+  scroller.scrollLeft = focusX * image.offsetWidth - scroller.clientWidth / 2;
+  scroller.scrollTop = focusY * image.offsetHeight - scroller.clientHeight / 2;
 }
 
 function startQuestionTimer() {
@@ -310,11 +358,9 @@ function confirmScoreAction() {
     return;
   }
 
-  if (pendingScoreAction === "correct") {
-    teams[teamIndex].score += currentQuestion.value;
-  } else {
-    teams[teamIndex].score -= currentQuestion.value;
-  }
+  const delta = pendingScoreAction === "correct" ? currentQuestion.value : -currentQuestion.value;
+  teams[teamIndex].score += delta;
+  currentQuestion.scoreChanges.push({ teamIndex, delta });
 
   currentTeamIndex = teamIndex;
   finishQuestion();
@@ -339,6 +385,13 @@ function finishQuestion() {
 
   stopQuestionTimer();
   usedQuestions.add(currentQuestion.id);
+  questionHistory.push({
+    id: currentQuestion.id,
+    category: currentQuestion.category,
+    value: currentQuestion.value,
+    scoreChanges: currentQuestion.scoreChanges || [],
+    previousTeamIndex: currentQuestion.previousTeamIndex
+  });
   currentQuestion = null;
   activeQuestionId = "";
   buzzerUnlockAt = 0;
@@ -357,6 +410,48 @@ function finishQuestion() {
   saveGame(false);
 }
 
+// Gjør det sist tatte spørsmålet tilgjengelig igjen og tar tilbake poengene det ga.
+async function undoLastQuestion() {
+  if (currentQuestion) {
+    alert("Lukk spørsmålet før du angrer.");
+    return;
+  }
+
+  const last = questionHistory[questionHistory.length - 1];
+  if (!last) {
+    alert("Det er ingen spørsmål å angre.");
+    return;
+  }
+
+  const changes = last.scoreChanges.length
+    ? last.scoreChanges.map(change =>
+        `${teams[change.teamIndex]?.name || "Ukjent lag"}: ${change.delta > 0 ? "−" : "+"}${Math.abs(change.delta)} poeng`
+      ).join("\n")
+    : "Ingen poeng ble gitt for spørsmålet.";
+
+  if (!confirm(`Angre «${last.category} – ${last.value}»?\n\nSpørsmålet blir tilgjengelig på brettet igjen.\n${changes}`)) return;
+
+  questionHistory.pop();
+  last.scoreChanges.forEach(change => {
+    if (teams[change.teamIndex]) teams[change.teamIndex].score -= change.delta;
+  });
+  usedQuestions.delete(last.id);
+  if (Number.isInteger(last.previousTeamIndex)) currentTeamIndex = last.previousTeamIndex;
+
+  renderScoreBoard();
+  renderBoard();
+  await saveGame(false);
+}
+
+function updateUndoButton() {
+  const button = document.getElementById("undoButton");
+  if (!button) return;
+
+  const last = questionHistory[questionHistory.length - 1];
+  button.disabled = !last;
+  button.title = last ? `Angre «${last.category} – ${last.value}»` : "Ingen spørsmål å angre";
+}
+
 function resetGame() {
   const confirmed = confirm("Vil du nullstille poeng og brukte spørsmål?");
 
@@ -373,6 +468,7 @@ function resetGame() {
   }));
 
   usedQuestions = new Set();
+  questionHistory = [];
   currentTeamIndex = 0;
 
   renderScoreBoard();
@@ -389,6 +485,7 @@ function goBackToSetup() {
 
   teams = [];
   usedQuestions = new Set();
+  questionHistory = [];
   currentTeamIndex = 0;
 
   document.getElementById("setupPanel").classList.remove("hidden");

@@ -25,6 +25,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
+    closeImageZoom();
+
     const backdrop = document.getElementById("extraPointsBackdrop");
     if (backdrop && backdrop.classList.contains("show")) {
       closeExtraPoints();

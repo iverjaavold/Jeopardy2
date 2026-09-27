@@ -8,6 +8,7 @@ let editorSetId = null; // null = nytt spørsmålssett
 
 let teams = [];
 let usedQuestions = new Set();
+let questionHistory = []; // tatte spørsmål i rekkefølge, med poengendringer (for «Angre»)
 let currentQuestion = null;
 let currentTeamIndex = 0;
 let isLiveMode = false;

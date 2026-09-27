@@ -601,3 +601,96 @@
   .special-card .special-title,
   .special-race-list li { animation: none !important; }
 }
+
+/* Angre-knappen */
+#undoButton:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* Spillkoden over den røde knappen */
+.buzzer-game-code {
+  margin: 14px 0 0;
+  font-size: 1.1rem;
+}
+
+.buzzer-game-code strong {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 3px 12px;
+  border-radius: 10px;
+  background: rgba(255,215,0,0.16);
+  color: #ffd700;
+  font-size: 1.6rem;
+  letter-spacing: .18em;
+}
+
+/* Zoom på spørsmålsbilder */
+.question-image {
+  cursor: zoom-in;
+}
+
+.question-image-hint {
+  margin: -12px 0 18px;
+  color: #c7d0ef;
+  font-size: .85rem;
+}
+
+.image-zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1700;
+  display: none;
+  background: rgba(0,0,0,0.94);
+}
+
+.image-zoom-scroller {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* margin: auto sentrerer bildet, men lar det rulles når det er zoomet inn */
+.image-zoom-scroller img {
+  flex-shrink: 0; /* ellers krymper flex-boksen det zoomede bildet */
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  cursor: zoom-in;
+  user-select: none;
+}
+
+.image-zoom-scroller img.zoomed {
+  max-width: none;
+  max-height: none;
+  cursor: zoom-out;
+}
+
+.image-zoom-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 1.3rem;
+}
+
+.image-zoom-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.6);
+  color: #dce4ff;
+  font-size: .85rem;
+  transform: translateX(-50%);
+  pointer-events: none;
+}

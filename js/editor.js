@@ -385,6 +385,7 @@ async function saveQuestionChanges() {
   }
 
   usedQuestions = new Set();
+  questionHistory = [];
 
   const gamePanel = document.getElementById("gamePanel");
   if (gamePanel && !gamePanel.classList.contains("hidden")) {

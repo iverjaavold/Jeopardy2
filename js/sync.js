@@ -33,6 +33,7 @@ function getGameState() {
     teams: teams,
     questions: questionsWithoutImages(QUESTIONS),
     usedQuestions: Array.from(usedQuestions),
+    questionHistory: questionHistory,
     currentTeamIndex: currentTeamIndex,
     activeQuestionId: activeQuestionId,
     activeQuestion: currentQuestion ? {
@@ -61,6 +62,7 @@ function applyGameState(state) {
     restoreImagesFromSet(state.setId);
   }
   usedQuestions = new Set(state.usedQuestions || []);
+  questionHistory = Array.isArray(state.questionHistory) ? state.questionHistory : [];
   currentTeamIndex = state.currentTeamIndex || 0;
   activeQuestionId = state.activeQuestionId || "";
   buzzerUnlockAt = Number(state.buzzerUnlockAt) || 0;
