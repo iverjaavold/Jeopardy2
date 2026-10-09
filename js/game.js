@@ -67,14 +67,40 @@ async function generateUniqueGameCode() {
   throw new Error("Fant ingen ledig spillkode.");
 }
 
+// Lenken lagene bruker for å bli med. Den åpner appen og kobler rett til spillet.
+function joinUrlFor(code) {
+  return `${location.origin}/?kode=${encodeURIComponent(code)}`;
+}
+
+function joinQrSvg(code) {
+  const qr = qrcode(0, "M");
+  qr.addData(joinUrlFor(code));
+  qr.make();
+  return qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true, alt: "QR-kode for å bli med" });
+}
+
 function updateGameCodeDisplay() {
   const box = document.getElementById("gameCodeBox");
-  const display = document.getElementById("gameCodeDisplay");
+  const qr = document.getElementById("gameCodeQr");
 
-  if (!box || !display) return;
+  if (!box || !qr) return;
 
-  display.textContent = currentGameCode || "----";
+  if (currentGameCode && box.dataset.code !== currentGameCode) {
+    const svg = joinQrSvg(currentGameCode);
+    qr.innerHTML = svg;
+    document.getElementById("joinQrLarge").innerHTML = svg;
+    box.dataset.code = currentGameCode;
+  }
   box.classList.toggle("hidden", !currentGameCode);
+}
+
+function openJoinQr() {
+  if (!currentGameCode) return;
+  document.getElementById("joinQrBackdrop").style.display = "flex";
+}
+
+function closeJoinQr() {
+  document.getElementById("joinQrBackdrop").style.display = "none";
 }
 
 function renderScoreBoard() {
