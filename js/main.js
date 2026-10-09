@@ -8,6 +8,16 @@ document.addEventListener("DOMContentLoaded", function() {
   renderQuestionSetPicker();
   renderRules();
 
+  // Kom man hit via QR-koden (/?kode=1234), kobles man rett til spillet.
+  const params = new URLSearchParams(location.search);
+  const kode = params.get("kode");
+  if (kode) history.replaceState(null, "", location.pathname);
+  if (/^\d{4}$/.test(kode || "")) {
+    joinGameFromLanding();
+    document.getElementById("joinCodeInput").value = kode;
+    joinGameWithCode();
+  }
+
   // Hold klokka i takt med serveren, også etter at en telefon har vært i dvale.
   syncServerClock();
   setInterval(syncServerClock, CLOCK_SYNC_INTERVAL_MS);
@@ -26,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     closeImageZoom();
+    closeJoinQr();
 
     const backdrop = document.getElementById("extraPointsBackdrop");
     if (backdrop && backdrop.classList.contains("show")) {

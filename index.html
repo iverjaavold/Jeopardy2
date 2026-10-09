@@ -153,10 +153,10 @@
         <button class="btn-primary" onclick="openExtraPoints()">⭐ Ekstra poeng</button>
         <button class="btn-red" onclick="openSpecialMenu()">🎉 Spesial</button>
         <button class="btn-secondary" onclick="showRules()">Regler</button>
-        <div id="gameCodeBox" class="game-code-box hidden">
-          <p id="gameCodeLabel">Spillkode:</p>
-          <div id="gameCodeDisplay" class="game-code">----</div>
-        </div>
+        <button id="gameCodeBox" class="game-code-box hidden" onclick="openJoinQr()" title="Vis QR-koden stort">
+          <span id="gameCodeQr" class="game-code-qr" aria-hidden="true"></span>
+          <span class="game-code-text">Scan for å bli med</span>
+        </button>
       </div>
 
       <div id="viewerActions" class="top-actions hidden">
@@ -371,6 +371,15 @@
     </div>
   </div>
 
+  <div id="joinQrBackdrop" class="join-qr-backdrop" role="dialog" aria-modal="true" aria-label="QR-kode for å bli med" onclick="closeJoinQr()">
+    <div class="join-qr-card" onclick="event.stopPropagation()">
+      <h2>Scan for å bli med</h2>
+      <div id="joinQrLarge" class="join-qr-large"></div>
+      <p>Åpne kameraet på mobilen og scan koden.</p>
+      <button class="btn-secondary" onclick="closeJoinQr()">Lukk</button>
+    </div>
+  </div>
+
   <div id="imageZoomBackdrop" class="image-zoom-backdrop" role="dialog" aria-modal="true" aria-label="Forstørret bilde">
     <div id="imageZoomScroller" class="image-zoom-scroller">
       <img id="imageZoomImage" alt="Forstørret bilde til spørsmålet" onclick="toggleImageZoom(event)" />
@@ -380,6 +389,7 @@
   </div>
 
   <!-- Rekkefølgen er viktig: data og tilstand først, deretter funksjonene som bruker dem. -->
+  <script src="js/qrcode.js"></script>
   <script src="js/questions.js"></script>
   <script src="js/question-sets.js"></script>
   <script src="js/state.js"></script>

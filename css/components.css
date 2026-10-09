@@ -694,3 +694,68 @@
   transform: translateX(-50%);
   pointer-events: none;
 }
+
+/* QR-kode for å bli med */
+.game-code-box {
+  cursor: pointer;
+  font: inherit;
+}
+
+.game-code-qr {
+  display: block;
+  width: 64px;
+  height: 64px;
+  padding: 3px;
+  border-radius: 6px;
+  background: white;
+}
+
+.game-code-qr svg,
+.join-qr-large svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.game-code-text {
+  font-weight: bold;
+  white-space: normal;
+  max-width: 90px;
+  line-height: 1.2;
+}
+
+.join-qr-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 8, 25, .85);
+}
+
+.join-qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(460px, 100%);
+  padding: 22px;
+  border-radius: 18px;
+  background: var(--blue);
+  color: white;
+  text-align: center;
+}
+
+.join-qr-card h2,
+.join-qr-card p {
+  margin: 0;
+}
+
+.join-qr-large {
+  width: min(380px, 80vw);
+  padding: 14px;
+  border-radius: 14px;
+  background: white;
+}

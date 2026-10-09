@@ -18,6 +18,7 @@ jeopardy-app/
 │   ├── theme.css         Fargerikt designlag oppå grunnstilen
 │   └── components.css    Trykkresultat, spørsmålsredigering og ekstra poeng
 └── js/
+    ├── qrcode.js         QR-generator (Kazuhiko Arase, MIT) til «Scan for å bli med»
     ├── questions.js      Standardspørsmålene – rediger dem her
     ├── question-sets.js  Spørsmålssett: velge, lagre, importere og eksportere
     ├── state.js          Felles variabler (lag, poeng, spillkode osv.)
@@ -56,6 +57,10 @@ Når du endrer filene i repoet, publiserer Render den nye versjonen automatisk.
 - Serveren sover etter 15 minutter uten trafikk. Første besøk etterpå tar opptil et minutt. Åpne siden litt før spillet starter.
 - Spill uten aktivitet på 12 timer ryddes bort automatisk.
 - Spillene lagres bare i minnet. De forsvinner når serveren sover, starter på nytt eller publiseres på nytt. Mens dere spiller, lagres spillet hele tiden, og det holder serveren våken.
+
+## Bli med med QR-kode
+
+Når spillet er i gang, viser spillverten en QR-kode øverst til høyre i stedet for spillkoden. Trykk på den for å vise den stort på skjermen. Lagene scanner koden med mobilkameraet og kommer rett til valget mellom «Den røde knappen» og «Spilloversikt», uten å skrive inn noen kode. Lenken er `/?kode=1234`. «Bli med på spill» med firesifret kode virker fortsatt.
 
 ## Spørsmålssett
 
